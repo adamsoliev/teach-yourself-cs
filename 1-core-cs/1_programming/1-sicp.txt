@@ -10,88 +10,49 @@
   complexity of large software systems.
 
 ------------------------------------------------------------------------------------
-Building Abstractions with Procedures
+1. Building Abstractions with Procedures
 ------------------------------------------------------------------------------------
 
-Simple procedures <= (combination, abstraction)=> complex procedures
+Simple functions <= (combination, abstraction) => higher-order functions.
 
+(one abstraction (defining functions) and systematic introduction of examples
+of how it's useful and what can be done with it) 
 
 ------------------------------------------------------------------------------------
-Building Abstractions with Data
+2. Building Abstractions with Data
 ------------------------------------------------------------------------------------
-We turn in this chapter to another key aspect of any programming
-language: the means it provides for building abstractions by
-combining data objects to form compound data.
 
-Why do we want compound data in a programming language? For
-the same reasons that we want compound procedures: to elevate the
-conceptual level at which we can design our programs, to increase the
-modularity of our designs, and to enhance the expressive power of our
-language.
+Simple data <= (combination, abstraction) => compound data
 
+(one abstraction (combining primitive data with 'glue') and systematic introduction of examples
+of how it's useful and what can be done with it) 
 
-1. Compound data and data abstaction (how it helps make our programs much easier to design,
-maintain, and modify)
-    Our programs should use data in such a way as to make no assumptions
-    about the data that are not strictly necessary for performing
-    the task at hand. At the same time, a “concrete” data representation is
-    defined independent of the programs that use the data.
+  * compound data => sequences => generic operations on sequences (filter, map,
+    etc) => generic operations that can handle many different types of data.
 
-    a. Procedures (cons, car and cdr of pair) as glue to combine data objects to form more complex data
-    objects. (there are many possible kinds of glue and this is one of them). 
+-- closure
+  A programming technique that allows variables outside of the 
+  scope of a function to be accessed. Usually, a closure is created when a 
+  function is defined in another function, allowing the inner function to access
+  variables in the outer one
 
-    b. Idea of 'closure' - that the glue we use for combining data objects should allow
-    us to combine not only primitive data objects, but compound data objects as well.
-        * Representing 
-            sequences - pairs where the first points to value and the second
-            points to another pair; the second of the last pair is marked with
-            special end-to-list symbol. 
-            trees - sequences with compound data objects
+-- stratified design
+  the notion that a complex system should be structured as a sequence
+  of levels that are described using a sequence of languages. Each level is
+  constructed by combining parts that are regarded as primitive at that
+  level, and the parts constructed at each level are used as primitives at
+  the next level. The language used at each level of a stratified design has
+  primitives, means of combination, and means of abstraction appropriate
+  to that level of detail.
 
-    c. Idea of compound data objects being able to serve as 'conventional
-    interfaces' for combining program modules in mix-and-match ways.
-        * Sequences as conventional interfaces: the basic premise here is data
-        objects -> sequence, which serves as conventional interface allows us to define
-        certain standartized processing operations on sequences; those library
-        of general operations then can be used to build robust and modular
-        systems. 
+-- massage passing 
+  work with 'intelligent procedures' vs work with 'intelligent objects'
 
-    A crucial idea about languages and program design is the approach of stratified design,
-    the notion that a complex system should be structured as a sequence
-    of levels that are described using a sequence of languages. Each level is
-    constructed by combining parts that are regarded as primitive at that
-    level, and the parts constructed at each level are used as primitives at
-    the next level. The language used at each level of a stratified design has
-    primitives, means of combination, and means of abstraction appropriate
-    to that level of detail.
-
-
-2. Symbolic expressions - data whose elementary parts can be arbitrary symbols rather than only numbers.
-    a. there are many ways in which a given data structure can be represented in terms of simpler objects, 
-    and the choice of representation can have significant impact on the time and space requirements of 
-    processes that manipulate the data.
-
-3. The problem of working with data that may be represented differently by different parts of a program
-    a. This leads to the need to implement generic operations, which handle many different types of data.
-        * type tags - explicit information about how data objects are to be processed
-        * data-directed programming - a technique that allows individual data representations to be designed 
-        in isolation and then combined additively (i.e., without modification).
-            - two-dimensional table that contains the possible operations on one axis and the possible 
-            types on the other axis. The entries in the table are the procedures that implement each operation
-            for each type of argument presented. Additivity in this case means you don't have to change any 
-            existing procedures; you only need to add new entries to the table.
-        * massage passing (work with 'intelligent procedures' vs work with 'intelligent objects')???
+  refers to the sending of a message to a process which can be an object, 
+  etc. This message can be used to invoke another process, directly or indirectly.
         
-4. The idea of coercion
-   Building procedures that transform an object of one type into an equivalent
-   object of another type; these procedures use a special coercion table to
-   look up a procedure that transforms one type to another. 
-
-
-
-
 ------------------------------------------------------------------------------------
-Modularity, Objects and State
+3. Modularity, Objects and State
 ------------------------------------------------------------------------------------
 
 Organizational principles that guide us in formulating the overall design of a program
@@ -115,20 +76,6 @@ Organizational principles that guide us in formulating the overall design of a p
           each frame also has a ptr to its enclosing env. The value of a variable 
           with respect to the env is value given by the binding for that variable in 
           the first frame in the env that contains a binding for that variable.
-
-          --- Rules ---
-          * A procedure object is applied to a set of arguments by constructing a 
-          frame, binding the formal parameters of the procedure to the arguments 
-          of the call, and then evaluating the body of the procedure in the 
-          context of the new environment constructed. The new frame has as its 
-          enclosing environment the environment part of the procedure object being applied.
-
-          * A procedure is created by evaluating a A-expression relative to a given 
-          environment. The resulting procedure object is a pair consisting of the 
-          text of the A-expression and a pointer to the environment in which the 
-          procedure was created. / Rules
-
-      -- modeling with mutable data (having setters in oddition to getters/constructors).
 
       -- concurrency
           * serializing access to state
