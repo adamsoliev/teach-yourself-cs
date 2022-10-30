@@ -60,31 +60,13 @@ Organizational principles that guide us in formulating the overall design of a p
   a. Object-based approach
       We model state with local state variables, and we model the changes of state with assignments to those variables
 
-      -- assignment - assingment operator gives us ability to change object - properties (its local state) over 
-      time by assigning it to different value (modeling the concept of time in a programming language).
-
-      -- local state - each computational object must have its own local state 
-      variables describing the actual object's state.
-
-      -- environmental model of computation 
-      determines the context in which an expression should be evaluated. To apply 
-      a procedure to arguments, create a new environment containing a frame 
-      that binds the parameters to the values of the arguments.
-
-          * env is a sequence of frames, each of which is a table of name-value 
-          bindings (a single frame can contain at most one binding for any variable); 
-          each frame also has a ptr to its enclosing env. The value of a variable 
-          with respect to the env is value given by the binding for that variable in 
-          the first frame in the env that contains a binding for that variable.
-
       -- concurrency
-          * serializing access to state
-          One of the mechanisms to control concurrency. Serialization creates 
-          distinguished sets of procedures such that only one execution of a 
-          procedure in each serialized set is permitted to happen at a time.
+      One of the mechanisms to control concurrency is serialization, which 
+      creates distinguished sets of procedures such that only one execution of a 
+      procedure in each serialized set is permitted to happen at a time.
 
-          * deadlock
-          Each process is stalled forever, waiting for the other.
+      -- deadlock
+      Each process is stalled forever, waiting for the other.
 
   b. Stream-processing approach 
       Lets us model systems that have state without ever using assignment or 
