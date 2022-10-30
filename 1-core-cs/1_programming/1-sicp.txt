@@ -1,13 +1,19 @@
+Instead of arranging a course around the syntax of a currently fashionable 
+programming language, sicp focused the first course on the study of important 
+ideas in computing: functional abstraction, data abstraction, streams, 
+data-directed programming, implementation of message-passing objects, 
+interpreters, compilers, and register machines.
+
 -- programmers job
   1. Perfection of part and adequacy of collection.
 
 -- goals of intro CS
-  1. A computer language is not just a way of getting a computer to 
-  perform operations but rather that it is a novel formal medium for expressing 
+  1. A computer language is not just a way of getting a computer to perform 
+  operations but rather that it is a novel formal medium for expressing 
   ideas about methodology. 
 
-  2. The techniques used to control the intellectual 
-  complexity of large software systems.
+  2. The techniques used to control the intellectual complexity of large 
+  software systems.
 
 ------------------------------------------------------------------------------------
 1. Building Abstractions with Procedures
@@ -79,9 +85,30 @@ Organizational principles that guide us in formulating the overall design of a p
 
       - delayed evaluation
 
+------------------------------------------------------------------------------------
+4. Metalinguistic Abstraction 
+------------------------------------------------------------------------------------
 
-Misc resources:
-1. https://www.lesswrong.com/posts/GAqCiWJBttazYGsJR/review-structure-and-interpretation-of-computer-programs 
+Langugage level abstraction - building interpreters. 
+
+------------------------------------------------------------------------------------
+5.  Computing with Register Machines
+------------------------------------------------------------------------------------
+
+  "In a way, this completes the loop: the first three chapters show what kinds 
+  of things various programming abstractions allow, the fourth shows how these 
+  abstractions can be used to implement themselves, and the fifth looks 
+  “under the hood” of Lisp itself to consider how it can be implemented with 
+  elements simpler than itself. Of course, the question of how the simpler 
+  register machine itself can be implemented is left unanswered, but this is 
+  already starting to brings us into the realm of hardware, for which another 
+  book might be better suited."[1]
+
+------------------------------------------------------------------------------------
+
+Refereces/resources:
+1. summary: https://www.lesswrong.com/posts/GAqCiWJBttazYGsJR/review-structure-and-interpretation-of-computer-programs 
+2. solutions set: http://community.schemewiki.org/
 
 
 
