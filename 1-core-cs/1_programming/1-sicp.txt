@@ -1,96 +1,19 @@
-Foreword
----
-It doesn’t matter much what the programs are about or what applications they serve.
-What does matter is how well they perform and how smoothly they fit with other 
-programs in the creation of still greater programs. The programmer must seek both 
-perfection of part and adequacy of collection.
+-- programmers job
+  1. Perfection of part and adequacy of collection.
 
+-- goals of intro CS
+  1. A computer language is not just a way of getting a computer to 
+  perform operations but rather that it is a novel formal medium for expressing 
+  ideas about methodology. 
 
-Preface to the First Edition
----
-Our design of this introductory computer-science subject reflects two major
-concerns. First, a computer language is not just a way of getting a computer to 
-perform operations but rather that it is a novel formal medium for expressing 
-ideas about methodology. Second, the techniques used to control the intellectual 
-complexity of large software systems.
-
-The techniques we teach and draw upon are common to all of engineering design. 
-We control complexity by building abstractions that hide details when appropriate. 
-We control complexity by establishing conventional interfaces that enable us to 
-construct systems by combining standard, well-understood pieces in a “mix and match” way. 
-We control complex- xxii ity by establishing new languages for describing a design, 
-each of which emphasizes particular aspects of the design and deemphasizes others.
-
-Underlying our approach to this subject is our conviction that “com- puter science” 
-is not a science and that its significance has little to do with computers. The computer 
-revolution is a revolution in the way we think and in the way we express what we think.
-
-
-Acknowledgments
+  2. The techniques used to control the intellectual 
+  complexity of large software systems.
 
 ------------------------------------------------------------------------------------
 Building Abstractions with Procedures
 ------------------------------------------------------------------------------------
 
-Computational process <=> data <=> program.
-
-As we shall discover, Lisp’s flexibility in handling procedures as data makes it one 
-of the most convenient languages in existence for exploring these techniques.
-
-The elements of programming
-  Any powerful programming language should provide ways to combine simple ideas 
-  (procedures and data) to form more complex ideas (their combination and abstraction). 
-  There are three mechanisms for accomplishing this: 
-    -primitive expressions, which represent the simplest entities the language is
-    concerned with
-    -means of combination, by which compound elements are built from simpler ones, and 
-    -means of abstraction, by which compound elements can be named and manipulated as units.
-
-
-  Expressions
-    For expressions, Lisp uses prefix notation, which has two advantages: 
-      -may take arbitrary number of arguments
-      -extends in a straightforward way
-
-  Naming and the environment
-    Name object association. In this case, object can be various things.
-    General notion of environment is it being ‘memory’ to provide context in 
-    which an evaluation takes place. This plays an important role in our understanding of program execution.
-
-  Evaluating combinations
-    General rule is to apply the leftmost operator to operands in its right. 
-    There are exceptions to this rule and they are called special forms 
-    (e.g., (define x 2) define isn’t applied to x and 2 but it associates x 
-    with 2, which is a different rule than the general rule).
-
-    The various kinds of expressions (each with its associated evaluation rule) 
-    constitute the syntax of the programming language. In comparison with 
-    most other programming languages, Lisp has a very simple syntax; that 
-    is, the evaluation rule for expressions can be described by a simple 
-    general rule together with specialized rules for a small number of special forms.
-
-  Compound procedures
-    (define (⟨name⟩ ⟨formal parameters⟩) ⟨body⟩)
-  Conditional expressions and predicates
-    (cond (⟨p1⟩ ⟨e1⟩)
-    (⟨p2⟩ ⟨e2⟩)
-    …
-    (⟨p3⟩ ⟨e3⟩))
-    (⟨p⟩ ⟨e⟩) is called clause
-  Procedures as black-box abstractions
-
-Procedures and the processes they generate
-  Linear recursion and iteration
-    recursive process vs recursive procedure
-    Tree recursion
-    Orders of growth
-    Exponentiation
-    Greatest common divisors
-  Formulating abstractions with higher-order procedures
-    Procedures as arguments
-    Constructing procedures using lambda
-    Procedures as general methods
-    Procedures as returned values
+Simple procedures <= (combination, abstraction)=> complex procedures
 
 
 ------------------------------------------------------------------------------------
@@ -226,6 +149,10 @@ Organizational principles that guide us in formulating the overall design of a p
       itself to produce the required part.
 
       - delayed evaluation
+
+
+Misc resources:
+1. https://www.lesswrong.com/posts/GAqCiWJBttazYGsJR/review-structure-and-interpretation-of-computer-programs 
 
 
 
