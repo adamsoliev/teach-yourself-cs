@@ -137,19 +137,19 @@ The basic definitions of the encodings, derivation such
 properties as the range of representable numbers, their bit-level
 representations, and the properties of the arithmetic operations.
 
-The three most important representations of numbers. 
-  Unsigned (0 and up)
-    addition
-    multiplication
+  The three most important representations of numbers. 
+    Unsigned (0 and up)
+      addition
+      multiplication
 
-  Two's-complement (most common way to represent signed ints (- & +))
-    addition
-    multiplication
-    negation
+    Two's-complement (most common way to represent signed ints (- & +))
+      addition
+      multiplication
+      negation
 
-  Floating point (real numbers)
-    additing
-    multiplication
+    Floating point (real numbers)
+      additing
+      multiplication
 
   Information Storage
     binary (machine) - hexadecimal (easy to communicate) - decimal (humans)
