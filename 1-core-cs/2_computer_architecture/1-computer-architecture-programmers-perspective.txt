@@ -31,3 +31,39 @@
 11. Network Programming 
 12. Concurrent Programming 
 
+
+
+
+
+----------------------------------------------------------
+1. A Tour of Computer Systems
+----------------------------------------------------------
+
+  Information Is Bits + Context
+    chars => ASCII => bytes
+
+  Programs Are Translated by Other Programs into Different Forms
+    compilation system
+    ---
+    preprocessor - modifies .c file according to directives starting with '#'
+    compiler - translates .c to .s containing assembly-language
+    assembler - translates .s to .o containing machine-level instructions
+    linker - link .o file with other precompiled .o files
+    ---
+    
+  It Pays to Understand How Compilation Systems Work
+
+  Processors Read and Interpret Instructions Stored in Memory
+    hardware organization of a system
+    ---
+    buses - transfers fixed-size chunks of bytes known as 'words'
+    I/O devices - connected to I/O bus by either controller or adapter
+    main memory
+    processor
+    ---
+  Caches Matter
+  Storage Devices Form a Hierarchy
+  The Operating System Manages the Hardware
+  Systems Communicate with Other Systems Using Networks
+  Important Themes
+  Summary
