@@ -43,27 +43,150 @@
     chars => ASCII => bytes
 
   Programs Are Translated by Other Programs into Different Forms
-    compilation system
-    ---
-    preprocessor - modifies .c file according to directives starting with '#'
-    compiler - translates .c to .s containing assembly-language
-    assembler - translates .s to .o containing machine-level instructions
-    linker - link .o file with other precompiled .o files
-    ---
+    --- compilation system
+    preprocessor - modifies .c file according to directives starting with '#'.
+    compiler     - translates .c to .s containing assembly-language.
+    assembler    - translates .s to .o containing machine-level instructions.
+    linker       - link .o file with other precompiled .o files.
     
   It Pays to Understand How Compilation Systems Work
 
   Processors Read and Interpret Instructions Stored in Memory
-    hardware organization of a system
-    ---
-    buses - transfers fixed-size chunks of bytes known as 'words'
-    I/O devices - connected to I/O bus by either controller or adapter
-    main memory
-    processor
-    ---
+    --- hardware organization of a system
+    buses       - transfers fixed-size chunks of bytes known as 'words'.
+    I/O devices - connected to I/O bus by either controller or adapter.
+    main memory - a collection of dynamic random access memory (DRAM).
+    processor   - copies data (pointed by PC) into register file from main memory, 
+                  executes those instructions (if arithmetic, using APU) and
+                  stores results in register file (a collection of word-sized
+                  registers), which sends it to main memory.     
+
   Caches Matter
+    L1, L2 (and L3) - increasingly large and decreasingly fast. Have the same 
+    performance characteristics as registers but considerable larger. 
+    Implemented with static random access memory (SRAM).
+
+    exploiting cache memories correctly can improve performance by an order of
+    magnitude.
+
   Storage Devices Form a Hierarchy
+    L0 (registers) <=> L1 (SRAM) <=> L2 (SRAM) <=> L3 (SRAM) <=> L4 (DRAM) <=>
+    L5 (local disks) <=> L6 (distributed file systems, web servers).
+
+    each level serves as a cache for the level below.
+
   The Operating System Manages the Hardware
+    ----------------------------------------
+    |         Application programs          |
+    ----------------------------------------
+    |                 OS                    |
+    ----------------------------------------
+    | Processor | Main memory | I/O devices |
+    ----------------------------------------
+    |           |             |             | 
+    |           |             ---- Files ---
+    |           |                           |
+    |           ------- Virtual memory -----
+    |                                       |
+    |--------------- Processes -------------
+
+    process is the OS's abstraction for running a program. each process has its
+    own context (state) and is managed by the OS's kernel. can consist of
+    multiple execution units (threads).
+
+    virtual memory
+      kernel virtual memory   ↑
+      stack                   ↑
+      shared libraries        ↑ increasing address index 
+      heap                    ↑
+      program code and data   ↑
+
+    file - a sequence of bytes (every device is modeled as a file)
+
   Systems Communicate with Other Systems Using Networks
+
   Important Themes
+    parallelism 
+      thread-level concurrency
+        multiple programs at the same time - concurrency
+        multiple threads per single program - thread-level concurrency 
+
+      instruction-level parallelism
+        executing multiple instructions at the same time
+
+      single-instruciton, multiple-data (SIMD) parallelism
+        single instruction causing mutliple operations to be performated at the
+        same time
+
+    the importance of abstractions in computer systems
+      on processor side
+        instruction set architecture - one instruction set for all types of
+        processor implementations
+
+      on operating system side
+        files, virtual memory, processes
+
   Summary
+
+
+
+----------------------------------------------------------
+2. Representing and Manipulating Information
+----------------------------------------------------------
+The basic definitions of the encodings, derivation such
+properties as the range of representable numbers, their bit-level
+representations, and the properties of the arithmetic operations.
+
+The three most important representations of numbers. 
+  Unsigned (0 and up)
+    addition
+    multiplication
+
+  Two's-complement (most common way to represent signed ints (- & +))
+    addition
+    multiplication
+    negation
+
+  Floating point (real numbers)
+    additing
+    multiplication
+
+  Information Storage
+    binary (machine) - hexadecimal (easy to communicate) - decimal (humans)
+
+    word size (w-bit) => virtual address space (0 - ([2^w] - 1)); for example,
+    32-bit word size limits the vas to 4GB, while 64-bit leads to a vas of 16
+    exabytes. 
+      -------------------------------------------------
+          C declaration                     Bytes
+      ------------------------------    ---------------
+      Signed          Unsigned          32-bit  64-bit
+      -------------------------------------------------
+      [signed] char   unsigned char       1       1
+      short           unsigned short      2       2
+      int             unsigned            4       4
+      long            unsigned long       4       8
+      int32_t         uint32_t            4       4
+      int64_t         uint64_t            8       8
+      char*                               4       8
+      float                               4       4
+      double                              8       8
+      -------------------------------------------------
+      * Using fixed-size integer types (int32_t & int64_t) is the best way for
+      programmers to have close control over data representations across
+      different machines and compilers.
+
+
+  Integer Representation
+
+
+  Integer Arithmetic
+
+
+  Floating Point
+
+
+  Summary
+
+
+ 
