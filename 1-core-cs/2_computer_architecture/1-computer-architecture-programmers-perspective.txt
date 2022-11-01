@@ -176,6 +176,9 @@ representations, and the properties of the arithmetic operations.
       programmers to have close control over data representations across
       different machines and compilers.
 
+      a multi-byte object is stored as a contiguous sequence of bytes, with the
+      address of the object given by the smallest address of the bytes used.
+
 
   Integer Representation
 
