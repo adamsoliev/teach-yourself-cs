@@ -129,7 +129,6 @@
   Summary
 
 
-
 ----------------------------------------------------------
 2. Representing and Manipulating Information
 ----------------------------------------------------------
@@ -139,17 +138,8 @@ representations, and the properties of the arithmetic operations.
 
   The three most important representations of numbers. 
     Unsigned (0 and up)
-      addition
-      multiplication
-
     Two's-complement (most common way to represent signed ints (- & +))
-      addition
-      multiplication
-      negation
-
     Floating point (real numbers)
-      additing
-      multiplication
 
   Information Storage
     binary (machine) - hexadecimal (easy to communicate) - decimal (humans)
@@ -172,9 +162,9 @@ representations, and the properties of the arithmetic operations.
       float                               4       4
       double                              8       8
       -------------------------------------------------
-      * Using fixed-size integer types (int32_t & int64_t) is the best way for
-      programmers to have close control over data representations across
-      different machines and compilers.
+      * Using fixed-size integer types (intN_t where N = 8 16 32 64) is the
+      best way for programmers to have close control over data
+      representations across different machines and compilers.
 
       a multi-byte object is stored as a contiguous sequence of bytes, with the
       address of the object given by the smallest address of the bytes used.
@@ -210,22 +200,52 @@ representations, and the properties of the arithmetic operations.
       x >> 4 (arithmetic)   [0000 0110]  [1111 1001]
       ----------------------------------------------------------------
 
+  Integer Representation
       Unsigned encodings
         [1011] => 1*2^3 + 0*2^2 + 1*2^1 + 1*2^0 = 11
         [1111] => 1*2^3 + 1*2^2 + 1*2^1 + 1*2^0 = 15
 
-      Two's complement encodings
+      Two's complement encodings (signed)
         [1011] => -1*2^3 + 0*2^2 + 1*2^1 + 1*2^0 = -5
         [1111] => -1*2^3 + 1*2^2 + 1*2^1 + 1*2^0 = -1 
         * most significant bit has negative weight.
 
-      Signed <=> Unsigned
+      Signed <=> Unsigned (casting)
+        the effect of casting is to keep the bit values identical but change
+        how these bits are interpreted.
 
-  Integer Representation
+      Expanding the bit representation of a number
+        for unsigned, add necessary # of zeros to the left
+        for signed, add necessary # of sign-bits to the left
 
+        * One point worth making is that the relative order of conversion from
+        one data size to another and between unsigned and signed can affect the
+        behavior of a program. 
+
+      Truncating Numbers
+        going from w-bit to k-bit means we drop the high-order (w - k) bits. In
+        decimal terms, this means
+
+        -- positive truncation (positive overflow)
+        d_new = d_old - (2^k). (- could be replaced with mod)
+
+        -- negative truncation (negative overflow)
+        d_new = d_old + (2^k).
+
+      One way to avoid int bugs is to never use unsigned numbers except in
+      packing word with flags, addresses in systems programming and
+      implementing math packages.
 
   Integer Arithmetic
+    Unsigned
+      addition: normal case vs overflow (truncate the result)
+      negation: x = 0 ? x : 2^w - x
+      multiplication: normal vs overflow (truncate the result)
 
+    Two's complement 
+      addition: negative overflow vs normal vs positive overflow
+      negation: 
+      multiplication:
 
   Floating Point
 
