@@ -1,5 +1,4 @@
-
-
+-----------------------------------------------------------------------------------
 1. A Tour of Computer Systems
 
 ----------------------------------------------------------
@@ -30,9 +29,7 @@
 10. System-Level I/O
 11. Network Programming 
 12. Concurrent Programming 
-
-
-
+-----------------------------------------------------------------------------------
 
 
 ----------------------------------------------------------
@@ -126,12 +123,10 @@
       on operating system side
         files, virtual memory, processes
 
-  Summary
-
-
 ----------------------------------------------------------
 2. Representing and Manipulating Information
 ----------------------------------------------------------
+
 The basic definitions of the encodings, derivation such
 properties as the range of representable numbers, their bit-level
 representations, and the properties of the arithmetic operations.
@@ -290,41 +285,251 @@ representations, and the properties of the arithmetic operations.
         Round-up                      2      2      2      3      –1
       ----------------------------------------------------------------
 
-  Summary
+----------------------------------------------------------
+3. Machine-Level Representation of Programs 
+----------------------------------------------------------
+
+----------- Hardware background -----------
+At the lowest level (almost), it runs due to the actions of transistors.
+Transistors in digital logic circuits are used mostly as switches. You want the
+transistors to be either all the way OFF (no current flow) or all the way ON
+(lots of current flow). And you can use the output of one transistor to control
+the input of other transistors, so you can construct a complicated circuit by
+wiring them up in certain ways. 
+
+Using just a few transistors, you can build very simple logic circuits to
+implement binary digital logic (called "Boolean" logic after the guy who
+invented it). It turns out that you can build any digital logic function with a
+combination of just a few simple circuit types, such as AND/OR/NOT (you can
+actually do everything with just one, but no one really does that). By
+combining those simple circuits, more complicated circuits can be made (such as
+an adder, a multiplexer, etc.). You can use those circuits to make even more
+complicated ones. Like a CPU. 
+source: https://www.reddit.com/r/explainlikeimfive/comments/17faj8/eli5_how_computer_chips_work/
+-------------------------------------------
+
+C => assembly code (object code) => machine code (executable code)
+
+Being able to understand assembly code and how it relates to the
+original C code is a key step in understanding how computers execute programs.
 
 
+Representation and manipulation of data 
+  
+   Two abstractions are importnat for machine-level programming. 
+
+    a) the format and behavior of a machine-level program is defined by the
+    'instruction set architecture' (ISA) defining:
+      * the processor state
+          a) program counter (address of the next instruction to be executed)
+
+          b) integer register file (16 locations storing 64-bit values)
+
+          c) conditional code registers
+          
+          d) a set of vector registers (each can hold one or multiple int or
+          float values) 
+
+      * the format of instructions (x86-64)
+          a) Instructions can range in length from 1 to 15 bytes (commonly used
+          ones and ones with more operands require a smaller # of bytes).
+
+          b) The instruction format is designed in such a way that from a given
+          starting position, there is a unique decoding of the bytes into
+          machine instructions.
+
+          ----------------------------------------------------------------------------------
+          C declaration       Intel data type       Assembly-code suffix        Size (bytes)
+          ----------------------------------------------------------------------------------
+          char                Byte                          b                       1
+          short               Word                          w                       2
+          int                 Double word                   l                       4
+          long                Quad word                     q                       8
+          char*               Quad word                     q                       8
+          float               Single precision              s                       4
+          double              Double precision              l                       8
+          ----------------------------------------------------------------------------------
 
 
+          Integer registers
+          ------------------------------------------------------------------
+          63                31            15        7
+          ------------------------------------------------------------------
+          %rax              %eax          %ax       %al       Return value
+          %rbx              %ebx          %bx       %bl       Callee saved 
+          %rcx              %ecx          %cx       %cl       4th argument 
+          %rdx              %edx          %dx       %dl       3rd argument 
+          %rsi              %esi          %si       %sil      2nd argument 
+          %rdi              %edi          %di       %dil      1st argument 
+          %rbp              %ebp          %bp       %bpl      Callee saved 
+          %rsp              %esp          %sp       %spl      Stack pointer 
+          %r8               %r8d          %r8w      %r8b      5th argument
+          %r9               %r9d          %r9w      %r9b      6th argument
+          %r10              %r10d         %r10w     %r10b     Callee saved 
+          %r11              %r11d         %r11w     %r11b     Callee saved 
+          %r12              %r12d         %r12w     %r12b     Callee saved 
+          %r13              %r13d         %r13w     %r13b     Callee saved 
+          %r14              %r14d         %r14w     %r14b     Callee saved 
+          %r15              %r15d         %r15w     %r15b     Callee saved 
+          ------------------------------------------------------------------
 
 
+          Operand forms supported by x86-64
+          --------------------------------------------------------------------------------------
+          Type                Form              Operand value               Name
+          --------------------------------------------------------------------------------------
+          Immediate           $Imm              Imm                         Immediate
+          Register            ra                R[ra]                       Register
+          Memory              Imm               M[Imm]                      Absolute
+          Memory              (ra)              M[R[ra]]                    Indirect
+          Memory              Imm(rb)           M[Imm + R[rb]]              Base + displacement
+          Memory              (rb,ri)           M[R[rb]+ R[ri]]             Indexed
+          Memory              Imm(rb,ri)        M[Imm + R[rb]+ R[ri]]       Indexed
+          Memory              (,ri,s)           M[R[ri] . s]                Scaled indexed
+          Memory              Imm(,ri,s)        M[Imm + R[ri] . s]          Scaled indexed
+          Memory              (rb,ri,s)         M[R[rb]+ R[ri] . s]         Scaled indexed
+          Memory (general)    Imm(rb,ri,s)      M[Imm + R[rb]+ R[ri] . s]   Scaled indexed
+          --------------------------------------------------------------------------------------
+          * a, b, i - subscripts
+          * $Imm - constant values
+          * ra - arbitrary register a, R[ra] - content of that register viewed in the array of registers
+          * ra - value; (ra) - address in memory where value is stored
+          * Mb[Addr] - a reference to b-byte value stored in memory starting at Addr (subscript b is dropped for simplicity)
+          * M[x] - different addressing modes
+
+          Data Movement Instructions
+            - mov (movb, movw, movl, movq)
+            - movz (movzbw, movzbl, movzwl, movzbq, movzwq)           - move zero-extended 'x' to 'y'
+            - movs (movsbw, movsbl, movswl, movsbq, movswq, movslq)   - move sign-extended 'x' to 'y'
+            - pushq & popq (onto and from the program stack)
+
+          Arithmetic and Logical Operations
+          ---------------------------------------------------------------
+          Instruction       Effect            Description
+          ---------------------------------------------------------------
+          leaq S,D          D ← &S            Load effective address
+          inc D             D ← D+1           Increment
+          dec D             D ← D−1           Decrement
+          neg D             D ← -D            Negate
+          not D             D ← ~D            Complement
+          add S,D           D ← D + S         Add
+          sub S,D           D ← D − S         Subtract
+          imul S,D          D ← D ∗ S         Multiply
+          xor S,D           D ← D ^ S         Exclusive-or
+          or S,D            D ← D | S         Or
+          and S,D           D ← D & S         And
+          sal k,D           D ← D<<k          Left shift
+          shl k,D           D ← D<<k          Left shift (same as sal)
+          sar k,D           D ← D>>A k        Arithmetic right shift
+          shr k,D           D ← D>>L k        Logical right shift
+          ---------------------------------------------------------------
+
+      * the effect each of these instructions will have on the state. 
+
+    b) the memory addresses used by a machine-level program are 'virtual
+    addresses'.
 
 
+Implementation of control.
+  Execution of machine instructions can be altered with a jump instruction.
 
+  Condition code registers:
+    CF - carry flag; most recent operation yielded a carry
+    ZF - zero flag; most recent operation yielded zero
+    SF - sign flag; most recent operation yielded a negative value
+    OF - overflow flag; most recent operation yielded two's complement overflow
 
+  There are two classes of instructions that set condition codes without
+  altering any other registers (arithmetic and logical operations also set
+  condition code registers but they also alter other registers).
+    ---------------------------------------------------------
+    Instruction     Based on      Types
+    ---------------------------------------------------------
+    cmp S1, S2      S2 - S1       cmpb, cmpw, cmpl, cmpq
+    test S1, S2     S1 & S2       testb, testw, testl, testq
+    ---------------------------------------------------------
 
+  There are 3 common ways of using condition codes:
+    - set a byte to 0 or 1 depending on some combination of condition codes
 
+        The set instructions
+        --------------------------------------------------------------------------------------
+        Instruction     Synonym         Effect          Set condition
+        --------------------------------------------------------------------------------------
+        sete  D         setz            D ← ZF                  Equal / zero
+        setne D         setnz           D ← ~ ZF                Not equal / not zero
+        sets  D                         D← SF                   Negative
+        setns D                         D← ~ SF                 Nonnegative
+        setg  D         setnle          D ← ~ (SF ^ OF) & ~ZF   Greater (signed >)
+        setge D         setnl           D ← ~ (SF ^ OF)         Greater or equal (signed >=)
+        setl  D         setnge          D ← SF ^ OF             Less (signed <)
+        setle D         setng           D ← (SF ^ OF) | ZF      Less or equal (signed <=)
+        seta  D         setnbe          D ← ~ CF & ~ZF          Above (unsigned >)
+        setae D         setnb           D ← ~ CF                Above or equal (unsigned >=)
+        setb  D         setnae          D ← CF                  Below (unsigned <)
+        setbe D         setna           D ← CF | ZF             Below or equal (unsigned <=)
+        --------------------------------------------------------------------------------------
+        * suffixes denote different conditions (not different operand sizes)
 
+    - conditionally jump to some other part of the program
 
+        The jump instructions
+        --------------------------------------------------------------------------------------
+        Instruction         Synonym       Jump condition            Description
+        --------------------------------------------------------------------------------------
+        jmp Label                         1                         Direct jump
+        jmp *Operand                      1                         Indirect jump
+        je  Label           jz            ZF                        Equal / zero
+        jne Label           jnz           ~ZF                       Not equal / not zero
+        js  Label                         SF                        Negative
+        jns Label                         ~SF                       Nonnegative
+        jg  Label           jnle          ~(SF ^ OF) & ~ZF          Greater (signed >)
+        jge Label           jnl           ~(SF ^ OF)                Greater or equal (signed >=)
+        jl  Label           jnge          SF ^ OF                   Less (signed <)
+        jle Label           jng           (SF ^ OF) | ZF            Less or equal (signed <=)
+        ja  Label           jnbe          ~CF & ~ZF                 Above (unsigned >)
+        jae Label           jnb           ~CF                       Above or equal (unsigned >=)
+        jb  Label           jnae          CF                        Below (unsigned <)
+        jbe Label           jna           CF | ZF                   Below or equal (unsigned <=)
+        --------------------------------------------------------------------------------------
 
+    - conditionally transfer data
+        Can only be used in restricted cases, but these cases are fairly common
+        and provide a much better match to the operation of modern processors.
 
+        The conditional move instructions
+        --------------------------------------------------------------------------------------
+        Instruction       Synonym         Move condition        Description
+        --------------------------------------------------------------------------------------
+        cmove  S, R       cmovz           ZF                    Equal / zero
+        cmovne S, R       cmovnz          ~ZF                   Not equal / not zero
+        cmovs  S, R                       SF                    Negative
+        cmovns S, R                       ~SF                   Nonnegative
+        cmovg  S, R       cmovnle         ~(SF ^ OF) & ~ZF      Greater (signed >)
+        cmovge S, R       cmovnl          ~(SF ^ OF)            Greater or equal (signed >=)
+        cmovl  S, R       cmovnge         SF ^ OF               Less (signed <)
+        cmovle S, R       cmovng          (SF ^ OF) | ZF        Less or equal (signed <=)
+        cmova  S, R       cmovnbe         ~CF & ~ZF             Above (unsigned >)
+        cmovae S, R       cmovnb          ~CF                   Above or equal (Unsigned >=)
+        cmovb  S, R       cmovnae         CF                    Below (unsigned <)
+        cmovbe S, R       cmovna          CF | ZF               Below or equal (unsigned <=)
+        --------------------------------------------------------------------------------------
 
+Implementation of procedures.
 
+  A program can manage the storage required by its procedures using a stack,
+  where the stack and the program registers store the information required for
+  passing control and data, and for allocating memory.
 
+    a) Passing control.
+    b) Passing data.
+    b) Allocating and deallocating memory.
 
+Implementation of data structures (arrays, structures & unions).
 
+Out-of-bounds memory references and buffer overflow attacks.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+Examining the run-time behavior of a machine-level programs using the GDB
+debugger.
 
 
