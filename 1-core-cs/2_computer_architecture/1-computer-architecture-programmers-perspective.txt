@@ -73,19 +73,19 @@
     each level serves as a cache for the level below.
 
   The Operating System Manages the Hardware
-    ----------------------------------------
+    |---------------------------------------|
     |         Application programs          |
-    ----------------------------------------|
+    |---------------------------------------|
     |                 OS                    |
-    ----------------------------------------|
+    |---------------------------------------|
     | Processor | Main memory | I/O devices |
-    -----------------------------------------
+    |---------------------------------------|
     |           |             |             | 
-    |           |             ---- Files ---|
+    |           |             |--- Files ---|
     |           |                           |
-    |           ------- Virtual memory -----|
+    |           |------ Virtual memory -----|
     |                                       |
-     --------------- Processes -------------
+    |--------------- Processes -------------|
 
     process is the OS's abstraction for running a program. each process has its
     own context (state) and is managed by the OS's kernel. can consist of
@@ -474,9 +474,9 @@ Implementation of control.
     - conditionally jump to some other part of the program
 
         The jump instructions
-        --------------------------------------------------------------------------------------
+        -----------------------------------------------------------------------------------------
         Instruction         Synonym       Jump condition            Description
-        --------------------------------------------------------------------------------------
+        -----------------------------------------------------------------------------------------
         jmp Label                         1                         Direct jump
         jmp *Operand                      1                         Indirect jump
         je  Label           jz            ZF                        Equal / zero
@@ -491,7 +491,7 @@ Implementation of control.
         jae Label           jnb           ~CF                       Above or equal (unsigned >=)
         jb  Label           jnae          CF                        Below (unsigned <)
         jbe Label           jna           CF | ZF                   Below or equal (unsigned <=)
-        --------------------------------------------------------------------------------------
+        -----------------------------------------------------------------------------------------
 
     - conditionally transfer data
         Can only be used in restricted cases, but these cases are fairly common
