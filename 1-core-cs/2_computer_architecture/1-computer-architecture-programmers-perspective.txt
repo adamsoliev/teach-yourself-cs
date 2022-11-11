@@ -533,3 +533,44 @@ Examining the run-time behavior of a machine-level programs using the GDB
 debugger.
 
 
+
+
+----------------------------------------------------------
+4. Processor Architecture 
+----------------------------------------------------------
+
+Simple instruction set (Y86-64) 
+
+Background on digital hardware design.
+  Basic buildign blocks used in a processor, how they are connected and
+  operated.
+  HCL language
+
+Y86-64 processor based on sequential operation => transformations => Pipelined processor
+
+Logic design and the hardware control language
+  combinational logic (a number of logic gates assembled together)
+  memory elements
+  clock signals
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
