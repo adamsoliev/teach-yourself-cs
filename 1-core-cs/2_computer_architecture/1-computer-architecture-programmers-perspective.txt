@@ -559,15 +559,118 @@ Logic design and the hardware control language
 
 
 
+----------------------------------------------------------
+5. Optimizing Program Performance 
+----------------------------------------------------------
+1. Use efficient algorithms and data structures
+    a) Eliminate unnecessary work
+        - loop inefficiencies 
+            * code motion - identify computations performed multiple times but
+              whose result won't change.
+
+            * loop unrolling - reduce the # of iterations by computing more
+              elements on each iteration. (k x 1 loop unrolling)
+
+        - function calls
+        - conditinal tests
+        - memory references
+
+2. Write code that compilers can optimize
+    a) Understand capabilities and limitations of optimizing compilers
+        - know optimization blockers
+            * memory aliasing - If a compiler cannot determine whether or not
+              two pointers may be aliased, it must assume that either case is
+              possible, limiting the set of possible optimizations.
+
+            * function calls - most compilers don't try to determine if a
+              function is free of side effects, hence they leave those calls
+              intact, limiting the set of possible optimizations.
+
+3. Use parallelism capabilities of modern processors
+    a) Microarchitecture of processor
+        - instruction level parallelism (ILP)
+
+        - latency bound - a series of operations must be performed in strict
+          sequence, limiting the processor to use ILP. 
+
+        - throughput bound - raw computing capacity of the processor's
+          functional units, ultimate limit on program performance.
+        
+        - Modern processors
+            * Instruction control unit (ICU)
+                a) fetch control
+                b) instruction cache
+                c) instruction decoder
+
+            * Execution unit (EU)
+                a) functional units (store, load, arithmetic, branch)
+                    - latency - total time required to perform operation.
+
+                    - issue time - min # of clock cycles between 2 independent
+                      operations of the same type (# of operations that can be
+                      started on each clock cycle)
+
+                    - capacity - # of functional units capable of performing
+                      that operation.
+
+                    * a processor can potentially achieve a throughput of C/I
+                      operations per clock cycle (C - capacity, I - issue time)
+
+                b) data cache
+
+        - Enhancing parallelism - breaking latency bound
+            * multiple accumulators - for associative and commutative
+              operations (int +|*), split the set of combining operations into
+              X parts and combine them at the end. That way, the processor
+              doesn't need to delay one operation until the prev one finishes.
+              (k x k loop unrolling)
+
+            * reassociation transformation
+              (k x 1a loop unrolling)
+
+            ** In general, we have found that unrolling a loop and accumulating
+            multiple values in parallel is a more reliable way to achieve
+            improved program performance (than reassociation transformation).
+
+        - Some limiting factors
+            * Regiter Spilling - if a program has a degree of parallelism that
+              exceeds # of available registers, then the compiler will resort
+              to 'spilling', storing some of the temp values in memory.
+
+            * Branch prediction and misprediction penalties
+                - write code that favors conditional data transfers over
+                  control transfers.
+
+        - Understanding Memory Performance
+            * Load an store 
+
+4. Issues related to optimizing large programs in the real world
+    a) High-level design
+        - Avoid algos and ds with asymptotically poor performance
+    b) Basic coding principles
+        - Eliminate excessive func calls
+            * move computations out of the loop if possible
+            * trade off modularity to gain greater efficiency
+        - Eliminate excessive memory refs
+            * introduce temp variables to hold intermediate results
+            * store result in an array or global variable only when
+              finished
+    c) Low-level optimizations
+        - Unroll loops to reduce overhead and to enable further
+          optimizations
+        - Increase instruction-level parallelism by using techniques such
+          as multiple accumulators and reassociation
+        - Rewrite conditional operations in a functional style to enable
+          compilation via conditional data transfers
 
 
 
-
-
-
-
-
-
+A good strategy: 
+  - experiement and analyze
+  - look at inner loops (excessive memory references & poor use of registers).
+  - identify critical paths, which gives you a lower bound on time and try to
+    steer the compiler towards more efficient implementations, which means
+    doing a lot of rewriting of a program.
 
 
 
