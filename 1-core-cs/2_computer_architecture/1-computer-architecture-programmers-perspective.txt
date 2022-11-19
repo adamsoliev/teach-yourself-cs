@@ -532,9 +532,6 @@ Out-of-bounds memory references and buffer overflow attacks.
 Examining the run-time behavior of a machine-level programs using the GDB
 debugger.
 
-
-
-
 ----------------------------------------------------------
 4. Processor Architecture 
 ----------------------------------------------------------
@@ -903,3 +900,75 @@ modules that can be modified and compiled/linked separately.
                   to-be-created final executable obj file) takes place
                 - partially linked obj file is then loaded into memory and is
                   dynamically linked at run-time
+
+
+----------------------------------------------------------
+8. Exceptional Control Flow 
+----------------------------------------------------------
+
+    E table, E number, kernel mode (vs user mode), E handler
+    * E - exception
+    
+    a) Exceptions (hardware interrupt => sofware handler => effect)
+
+        -----------------------------------------------------------------------------------------------
+        Class       Cause                             Async/sync      Return behavior
+        -----------------------------------------------------------------------------------------------
+        Interrupt   Signal from I/O device            Async           Next instruction
+        Trap        Intentional exception             Sync            Next instruction
+        Fault       Potentially recoverable error     Sync            Current instruction | Abort
+        Abort       Nonrecoverable error              Sync            Abort
+        -----------------------------------------------------------------------------------------------
+
+        Interrupt (I/O signals): network adapters, disk controllers, etc
+        Trap (e.g., system call via syscall): read, fork, execve, exit
+        Fault (recoverable errors): page fault exception
+        Aborts (fatal errors): SRAM/DRAM bits are corrupted
+
+    b) Process (kernel (OS) => process abstraction => applications)
+          - Main abstractions
+              * independent logical control flow abstraction
+              * private address space abstraction
+          - Context switch 
+              * built on top of the lower-level ECF a)
+
+    c) Signals (Applications => signals => OS => effects)
+        - Higher-level software form of exceptional control flow that allows
+          processes and the kernel to inturrupt other processes.
+
+        - At any point in time, a process can have one of type k pending signal
+          (sent but not received yet). Subsequent k-type signals are discarded. 
+
+        - Transfer of control to a destination process occurs in two steps
+            * Sending a signal: process group, /bin/kill, kill, alarm
+            
+            * Receiving a signal
+                - The process terminates.
+                - The process terminates and dumps core.
+                - The process stops (suspends) until restarted by a SIGCONT signal.
+                - The process ignores the signal.
+                  * A process can modify the default action associated with a
+                    signal by using the 'signal' function.
+                  * Signal handlers can be interrupted by other handlers (nested handling)
+
+            * Blocking/unblocking signals
+
+        - Writing signal handlers
+            * Keep handlers as simple as possible
+            * Call only async-signal-safe functions in your handlers (don't allow nested handling?)
+            * Save and restore errno (leave errno unchanged since other parts of the program might use it)
+            * Protect accesses to shared global data structures by blocking all signals
+            * Declare global variables with volatile (tells compiler not to cache the variable)
+            * Declare flags with sig_atomic_t
+
+    d) Nonlocal jumps (Application => bypass call/return discipline)
+        - User-level exceptional control flow that transfers control directly
+          from one func to another currently executing func and is provided by
+          the setjmp and longjmp functions
+        - Applications
+            * permit an immediate return from a deeply nested function call
+            * branch out of a signal handler to a specific code location,
+              rather than returning to the instruction that was interrupted by
+              the arrival of the signal
+
+
