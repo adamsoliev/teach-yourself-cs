@@ -759,11 +759,147 @@ A good strategy:
         - hit rate        = 1 - misses
         - hit time        = set selection + line identification + word selection
         - miss penalty    = additional time required because of a miss
-            -----------------------------------
+            ------------------------------------------------------
             cache       penalty (clock cycles)
-            -----------------------------------
+            ------------------------------------------------------
             L1          10  (L1 has to get data from L2)
             L2          50  (L2 has to get data from L3)
             L3          200 (L3 has to get data from main memory)
-            -----------------------------------
+            ------------------------------------------------------
+    
+    e) Conclusion
+        The performance of the memory system is a mountain of temporal and
+        spatial locality whose elevations can vary by over an order of
+        magnitude.Wise programmers try to structure their programs so that they
+        run in the peaks instead of the valleys. The aim is to exploit temporal
+        locality so that heavily used words are fetched from the L1 cache, and
+        to exploit spatial locality so that as many words as possible are
+        accessed from a single L1 cache line.
 
+        - Focus your attention on the inner loops, where the bulk of the computations
+          and memory accesses occur.
+        - Try to maximize the spatial locality in your programs by reading data objects
+          sequentially, with stride 1, in the order they are stored in memory.
+        - Try to maximize the temporal locality in your programs by using a data object
+          as often as possible once it has been read from memory
+
+
+----------------------------------------------------------
+7. Linking 
+----------------------------------------------------------
+Linkers allow us to decompose large programs into smaller, more manageable
+modules that can be modified and compiled/linked separately.
+
+1. Preprocessor (.i) => compiler (.s) => assembler (.o) => linker (progam) => loader => CPU/memory
+2. Obj files
+    a) Types
+        - relocatable
+            * Relocatable obj file format
+                -------------------------
+                |     ELF header        |   - metadata about this file
+                -------------------------
+                |       .text           |   - machine code of the compiled program
+                |       .rodata         |   - read-only data (e.g. format strs & jump tables)
+                |       .data           |   - initialized global and static C variables [1] 
+                |       .bss            |   - uninitialized global and static variables (incl. ones that are equal 0)
+                |       .symtab         |   - symbol table with info about funcs and global variables defined/ref'd in the program
+                |       .rel.text       |   - a list of locs in .text section that need to be modified 
+                |       .rel.data       |   - see above
+                |       .debug          |   - debug symbol table
+                |       .line           |   - mapping between C source program and machine instruction in .text
+                |       .strtab         |   - string table for .symtab and .debug and for section names in section headers
+                -------------------------
+                | Section haeder table  |   - locs and sizes of various sections
+                -------------------------
+                [1] - local nonstatic variables are managed at run time on the stack
+                * linker doesn't care about local variables
+
+            * Symbol resolution
+                - Duplicates in regular files
+                    - Rule 1. Multiple strong symbols with the same name are not allowed.
+                    - Rule 2. Given a strong symbol and multiple weak symbols with the same name, choose the strong symbol.
+                    - Rule 3. Given multiple weak symbols with the same name, choose any of the weak symbols.
+                      * initialized = strong; uninitialized = weak
+                      * rules 2 & 3 are a source of nasty bugs
+
+                -  Resolution with static libraries (a package of related obj modules in a single file)
+                    * Process
+                        - Include the header file (.h) of the shared library in your
+                          file (.h => symbols)
+                        - Pass shared library archive file (.a) to the linker with
+                          your own relocatable obj files (.a => definitions of
+                          the above symbols) [1]
+
+                        [1] the linker scans input files in the same order they
+                          appear in the compiler driver's command line (ordering of inputs matters). 
+                          Hence if the definition (e.g., in static library archive
+                          file) comes before the reference (e.g., in user file that used
+                          the library) and not after, the linker cannot resolve
+                          that symbol and will fail. So, the general rule with
+                          libraries is to place them at the end of command line.
+
+            * Relocation
+                - Relocating sections and symbol definitions
+                - Relocating symbol references within sections
+                    * relocation entries (when the assempler encounters
+                      references to objects whose ultimate locs are unknown, it
+                      generates relocation entries for those references)
+  
+        - executable
+            * Executable obj file format
+                -------------------------
+                |     ELF header        |   - metadata about this file
+                -------------------------
+                |  Segment header table |   - maps contiguous file sections to run-time memory segments
+                -------------------------
+                |       .init           |   - defines _init, which is called by the program init code
+                |       .text           |   - machine code of the compiled program
+                |       .rodata         |   - read-only data (e.g. format strs & jump tables)
+                |       .data           |   - initialized global and static C variables [1] 
+                |       .bss            |   - uninitialized global and static variables (incl. ones that are equal 0)
+                |       .symtab         |   -- 
+                |       .debug          |    | not loaded into memory
+                |       .line           |    |
+                |       .strtab         |   -- 
+                -------------------------
+                | Section haeder table  |   - locs and sizes of various sections
+                -------------------------
+
+            * Linux x86-64 run-time memory image (when the above loads into memory)
+
+                ----------------------------      2^(48)-1
+                |       User stack         |
+                |   (created at run time)  |
+                ---------------------------- %esp (stack pointer)
+                |             ↓            |
+                |             ↑            |
+                ----------------------------
+                | Memory-mapped region for |
+                |     shared libraries     |
+                ----------------------------
+                |                          |
+                |             ↑            |
+                ---------------------------- brk
+                |      Run-time heap       |
+                |   (created by malloc)    |
+                ---------------------------- --
+                |   Read/write segment     |  |
+                |      (.data,.bss)        |  |
+                ----------------------------  | loaded from executable file
+                |   Read-only code segment |  |
+                |   (.init,.text,.rodata)  |  |
+                ---------------------------- --   0x400000
+                |                          |
+                ----------------------------      0
+
+        - shared
+            * shared libraries - modern sofware innovation that address the disadvantages of
+              static libraries (for each running program, you must have separate
+              copy, which is wasteful of memory space)
+            * loaded at an arbitrary memory address and linked with a prog in memory
+            * only one copy of the library across one file system 
+            * linking is done in two phases:
+                - regular linking except no actual copying (from library to
+                  to-be-created final executable obj file) takes place
+                - partially linked obj file is then loaded into memory and is
+                  dynamically linked at run-time
