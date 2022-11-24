@@ -972,3 +972,373 @@ modules that can be modified and compiled/linked separately.
               the arrival of the signal
 
 
+----------------------------------------------------------
+9. Virtual Memory 
+----------------------------------------------------------
+
+  a) Virtual memory (VM) is an abstraction of main memory that provides each
+  process with a large, uniform, and private address space.
+
+      - It uses main memory efficiently by treating it as a cache for an address space
+      stored on disk, keeping only the active areas in main memory and transferring
+      data back and forth between disk and memory as needed. 
+
+          * Disk pages <=> virtual pages <=> memory pages
+
+              - Virtual pages 
+                  ----------------------------------------------------------------------------------------
+                  Type                                              Page Table Entry          CPU read
+                  ----------------------------------------------------------------------------------------
+                  - Unallocated (no data associated with the page)  [0][null]
+                  - Cached (page data is in main memory)            [1][address in memory]    Page hits
+                  - Uncached (page data is in disk)                 [0][address in disk]      Page faults
+                  ----------------------------------------------------------------------------------------
+                  * swapping/paging - transfering of a page between disk/memory
+                  * demand paging - waiting until last moment to do the transfer
+                  * thrashing - swapping of pages in/out continuously
+
+      - It simplifies memory management by providing each process with a uniform address space. 
+
+          * multiple virtual pages (diff apps instructions) can be mapped to
+            the same physical page (common lib instructions the apps use)
+
+          * demand paging & unique (tho same format) virtual address space for each process
+              - simplifies linking, loading, sharing, memory allocation 
+
+      - It protects the address space of each process from corruption by other processes.
+
+          * by adding some bits (mode, read, write) to the page table entry, VM
+            can provide page-level memory protection
+
+
+  b) This chapter looks at virtual memory from two angles. 
+
+      - The first half of the chapter describes how virtual memory works. 
+
+      - The second half describes how virtual memory is used and managed by applications.
+
+
+  c) Address translation
+      - CPU => VA => MMU => PTE address => main memory => PTE => MMU => PA =>
+        main memory => requested data // hit
+
+      ------------------------------------------------------------
+      Symbol       Description
+      ------------------------------------------------------------
+      Basic parameters
+      N = 2^n      Number of addresses in virtual address space
+      M = 2^m      Number of addresses in physical address space
+      P = 2^p      Page size (bytes)
+
+      Components of a virtual address (VA)
+                  n-1 p p-1 0
+      VA          [VPN] [VPO]
+      VAS         N-element Virtual address space
+      VPO         Virtual page offset (bytes)
+      VPN         Virtual page number
+      TLBI        TLB index
+      TLBT        TLB tag
+
+      Components of a physical address (PA)
+                  m-1 p p-1 0
+      PA          [PPN] [PPO]
+      PAS         M-element physical address space
+      PPO         Physical page offset (bytes)
+      PPN         Physical page number
+      CO          Byte offset within cache block
+      CI          Cache index
+      CT          Cache tag
+
+      Components of a page table
+      PT          Page table
+      PTBR        Page table base register (in CPU)
+      PTE         Page table entry
+      ------------------------------------------------------------
+
+      PTBR points to the PT; VPN in VA acts as a index to the PT; PTE contains
+      PPN, which when combined with VPO in a VA, forms a PA. 
+
+      
+            * Linux x86-64 run-time memory image (when the above loads into memory)
+
+          ---   ----------------------------    ----
+         |      |     Process-spec data    |        |
+         |      |   (e.g., page tables,    |    different for
+         |      |    task and mm structs,  |    each process 
+      kernel    |       kernel stack       |        | 
+      virtual   ----------------------------    ----      
+      memory    |     Physical memory      |        |
+         |      ----------------------------    identical for each process
+         |      |   Kernel code and data   |        |
+          ---   ----------------------------    ----      
+                |       User stack         |
+                |   (created at run time)  |
+                ---------------------------- %esp (stack pointer)
+                |             ↓            |
+                |             ↑            |
+                ----------------------------
+                | Memory-mapped region for |
+                |     shared libraries     |
+                ----------------------------
+                |                          |
+                |             ↑            |
+                ---------------------------- brk
+                |      Run-time heap       |
+                |   (created by malloc)    |
+                ----------------------------   ----
+                |   Read/write segment     |       |
+                |      (.data,.bss)        |       |
+                ----------------------------   loaded from executable file
+                |   Read-only code segment |       |
+                |   (.init,.text,.rodata)  |       |
+                ----------------------------   ----   0x400000
+                |                          |
+                ----------------------------          0
+
+
+  d) Memory mapping
+      - Manual allocator (mmap)
+      - Dynamic allocator (malloc)
+          * malloc manages memory in the heap (an area of virtual address space)
+
+      - Explicit allocator
+      - Implicit allocator (garbage collectors)
+
+
+  e) Common errors
+      - dereferencing bad pointers
+      - reading uninitialized memory
+      - allowing stack buffer overflows 
+      - assuming that pointers and the objects they point to are the same size
+      - referencing a pointer instead of the object it points to
+      - misunderstanding pointer arithmetic
+      - referencing nonexistent variables
+      - introducing memory leaks
+
+
+----------------------------------------------------------
+10. System-Level I/O
+----------------------------------------------------------
+
+I/O is the process of copying data between main memory and external devices.
+
+Read/write are subject to short counts
+
+Unix I/O
+  a) All I/O devices are modeled as files and all input/output is performed by
+  reading/writing the appropriate files.
+
+  b) File
+      - Type
+          * Regular - contains arbitrary data
+          * Directory - contains an array of links to other files, . (itself) and .. (its parent)
+          * Socket - a file used to communicate with other processes
+          * Named pipes, Symbolic links, Character, Block
+
+      - Opening files
+          * descriptor (tracked by the application), open file (tracked by the kernel)
+          * each process begins life with three open files (stdinput, stdoutput, standerr)
+
+      - Changing the current file position
+          * kernel maintains 'file position k' (init to zero), a byte offset from the beginning of a file
+
+      - Reading/writing files
+          * Read 
+              - copy n bytes from a file to memory, starting at k until n + k
+              - increment k by n
+              - given a file size m, if k >= m, trigger 'end-of-file' (EOF)
+          * Write
+              - copy n bytes from memory to a file, startign at k and then updating k
+          * Sometimes, read/write transfer fewer bytes than the application
+            requests. Such 'short counts' don't indicate an error. 
+
+      - Closing files
+          * Kernel frees data structures related to open files and adds descriptor to the available pool
+
+      - DS of open files and their role in file sharing and I/O redirection 
+          * Representing open files 
+              - descriptor table - unique for each process; indexed with open
+                file descriptors; each entry points to an entry in file table
+
+              - file table - shared by all processes to represent a set of
+                open files; each entry consists of a) file position b) a
+                reference count of descriptor entries that point to it c)
+                pointer to an entry in v-node table
+
+              - v-node table - shared by all processes; each entry contains
+                metadata pertaining to one file
+
+          * File sharing
+              - Normally, each descriptor references a separate file. In file
+                sharing, multiple descriptors reference the same file (same v-node
+                table entry) through different file table entries. Unlike this, a parent
+                shares files with its children through the same file table entries. 
+
+          * I/O Redirection
+              - <|> allows users to associate stdinput/stdoutput with disk files
+
+      - Standard I/O
+          * models an open file as a stream, which acts as a pointer to a
+            structure of type FILE. A stream of type FILE is an abstraction for
+            a file descriptor and a stream buffer, whose purpose is to minimize
+            the # of expensive calls to Linux I/O system calls (e.g., instead
+            of reading individual bytes from disk in every system call, load
+            a block of bytes into a buffer in the 1st call and in subsequent
+            calls, serve the function directly from the stream buffer as long
+            as there are unread bytes in it).
+
+      - Which I/O functions should I use?
+          * Use the standard I/O functions whenever possible
+          * Don’t use scanf or rio_readlineb to read binary files
+          * Use the Rio functions for I/O on network sockets
+            
+
+----------------------------------------------------------
+11. Network Programming 
+----------------------------------------------------------
+a) Network
+    - LAN (e.g., Ethernet) - spans a building
+        * Ethernet segment - [a hub (small box) - port -- wire -- adapter - hosts]
+            - hosts in a segment communicate with each other through a chunk of
+              bits called 'frame'
+    - Bridged Ethernet - a collection of LANs - spans entire buildings
+    - internet - a collection of incompatible LANs/WANs connected through routers
+      (specialized computers)
+        * WAN (example of high-speed point-to-point phone connections)
+
+        * Hosts in this collection of incompatible LANs/WANs are able
+          communicate with each other due to a layer of protocol software
+          running on each host and router that smoothes out the differences
+              - This protocol software must provide two capabilities
+                  1. Naming scheme - assigning addresses to hosts 
+                  2. Delivery mechanism - packet - header (size, src/dest addresses) and payload 
+          
+b) Global IP Internet
+    - Global IP Internet 
+        Sockets         -------------------                 -------------------                
+        interface       | Client          |  User code      | Server          |
+        (sys calls) -------------------------               |-----------------|
+                        | TCP/IP          |  Kernel code    | TCP/IP          | 
+        Hardware    -------------------------               |-----------------|
+        interface       | Network adapter |  Hardware       | Network adapter | 
+        (interrupts)    -------------------                 -------------------                  
+                                        |                    |              
+                                        ----------------------
+                                        | Global IP Internet |
+                                        ----------------------
+
+    - Internet - a collections of hosts
+        * each internet host has a unique 32-bit IP address
+        * a set of IP addresses is mapped to a set of Internet domain names
+        * processes on different Internet hosts can communicate with each other over connections
+
+    - 'Client - socket interface - Server' model
+        * Socket is an end of a connection presented to applications as an open
+          file with a corresponding descriptor
+            - Each socket has an address in the form [address][16-bit int port] 
+            - Each connection is identified with (cliaddr:cliport, servaddr:servport)
+
+    - Socket interface
+        * Socket address structure [protocol_family][port][IP]
+
+        * Client 
+            - creates a socket descriptor with socket constructor
+            - calls 'connect' to finish 'opening' the socket
+            - if successful, 'clientfd' is now ready for reading/writing
+
+        * Server 
+            - calls 'bind' to associate 'sockfd' with server's socket address in addr
+            - calls 'listen' to convert 'sockfd' from an active socket into a
+              listening one (meaning, turns it into server socket from client
+              socket, which is assumed by default by socket constructor)
+            - calls 'accept' to wait for connection requests
+                * waits for a request to arrive on 'listenfd'
+                * fills in the client's socket address in addr
+                * returns 'connectedfd' that can be used to
+                  communicate with clients using Unix I/O functions
+
+        * Host and Service conversion
+            - 'getaddrinfo' turns (hostnames||hostaddresses)(servicename||serviceport)
+              into socket address structures (a linked list of (host|service))
+            - 'getnameinfo' is the inverse of above
+            - these functions' returns used as input to socket constructors 
+
+
+
+----------------------------------------------------------
+12. Concurrent Programming 
+----------------------------------------------------------
+
+a) Three approaches for building concurrent programs
+    - Process
+        * each logical control flow is a process with separate virtual address space
+            - [pro] sharing VAS eliminates a lot of failures 
+            - [con] sharing VAS causes inefficiency
+            - [con] sharing VAS makes it more difficult to share data
+
+        * scheduled by the kernel
+        * flows communicate with each other using interprocess communication (IPC)
+
+    - I/O multiplexing
+        * flows, scheduled by applications, are state machines of a single process
+        * all flows share the same address space
+
+    - Threads
+        * threads - flows, scheduled by the kernel, running in the context of one process 
+
+        * all flows share the same address space but each has its own context
+
+        * shared variables
+            - global, local automatic, local static
+
+        * semaphores
+            - global variable with a nonnegative integer value that can only be
+              manipulated by two special operations (P & V)
+            - mutexes are binary semaphores (0|1) 
+            - P(s) decrement/return | suspend/V(s)/decrement/return   locking mutex
+            - V(s) increment by 1                                     unlocking mutex
+
+            - Uses
+                * Mutual exclusion
+                    -------------------- 
+                      sem_t mutex;              // declare semaphore that protects a variable
+                      Sem_init(&mutex, 0, 1);   // initialize mutex to 1
+
+                      P(&mutex);
+                      cnt++;                    // protect cnt from other threads
+                      V(&mutex);
+                    -------------------- 
+
+                * Schedule shared resource
+                    - producer-consumer problem
+                        * producer -- | buffer | -- consumer
+                        * semaphore locks/unblocks the buffer
+
+                    - readers-writers problem
+                        * different threads accessing shared resource by either read-only | write access
+        * Thread safety
+
+b) Issues
+    - Synchronizing concurrent accesses to shared data
+        * P and V semaphore operations to 
+            - provide mutually exclusive access to shared data
+            - schedule access to resources
+
+    - Functions that are called by threads must have a property known as thread safety
+        * four classes of thread-unsafe functions
+            - does not protect shared variables
+            - keeps state across multiple invocations
+            - returns pointer to a static variable
+            - calls thread-unsafe functions
+
+        * reentrant functions - thread-safe
+            - don't access shared data
+            - are more efficient bc don't require any synchronization primitives
+
+    - Races and deadlocks
+        * Races occur when programmers make incorrect assumptions about how logical flows are scheduled. 
+        * Deadlocks occur when a flow is waiting for an event that will never happen
+    
+
+
+
