@@ -1,3 +1,5 @@
+3e solutions: https://dreamanddead.github.io/CSAPP-3e-Solutions/
+
 -----------------------------------------------------------------------------------
 1. A Tour of Computer Systems
 
