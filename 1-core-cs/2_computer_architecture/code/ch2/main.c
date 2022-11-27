@@ -150,10 +150,11 @@ int main() {
   test__reverse_array();
   */
   // custom_bit_mask(0x65C9F2AB);
-  int b = 0x46;
-  show_int(~b);
-  show_int(!b);
-  show_int(!!b);
+  short x = 12345;
+  short mx = -x;
+
+  show_bytes((byte_pointer) &x, sizeof(short));
+  show_bytes((byte_pointer) &mx, sizeof(short));
 
   return 0;
 }
