@@ -150,11 +150,19 @@ int main() {
   test__reverse_array();
   */
   // custom_bit_mask(0x65C9F2AB);
-  short x = 12345;
-  short mx = -x;
+  short sx = -12345;
+  unsigned short usx = sx;
+  int x = sx;
+  unsigned int ux = usx;
 
-  show_bytes((byte_pointer) &x, sizeof(short));
-  show_bytes((byte_pointer) &mx, sizeof(short));
+  printf("sx = %d:\t", sx);
+  show_bytes((byte_pointer) &sx, sizeof(short));
+  printf("usx = %u:\t", usx);
+  show_bytes((byte_pointer) &usx, sizeof(unsigned short));
+  printf("x = %d:\t", x);
+  show_bytes((byte_pointer) &x, sizeof(int));
+  printf("ux = %u:\t", ux);
+  show_bytes((byte_pointer) &ux, sizeof(unsigned int));
 
   return 0;
 }
