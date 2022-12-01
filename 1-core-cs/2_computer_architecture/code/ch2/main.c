@@ -91,14 +91,14 @@ void test__reverse_array() {
   
   // test
   reverse_array(a, 4);
-  assert(a[0] = 1);
-  assert(a[2] = 4);
-  assert(a[3] = -2);
+  assert(a[0] == 1);
+  assert(a[2] == 4);
+  assert(a[3] == -2);
 
   reverse_array(b, 5);
-  assert(b[0] = 9);
-  assert(b[2] = 8);
-  assert(b[4] = -2);
+  assert(b[0] == 9);
+  assert(b[2] == 8);
+  assert(b[4] == -2);
 
   _print(1, "test__reverse_array()");
 }
@@ -138,31 +138,11 @@ int bool_or(int x, int y) {
 
 int bool_xor(int x, int y) {
   // x ^ y = (x & ~y) | (~x & y)
-  
   return bis(bic(x, y), bic(y, x));
 }
 //////////////////////////////////////////////////////////////////////////////
 
 int main() {
-  /*
-  test__show_bytes(43);
-  test__inplace_swap();
-  test__reverse_array();
-  */
-  // custom_bit_mask(0x65C9F2AB);
-  short sx = -12345;
-  unsigned short usx = sx;
-  int x = sx;
-  unsigned int ux = usx;
-
-  printf("sx = %d:\t", sx);
-  show_bytes((byte_pointer) &sx, sizeof(short));
-  printf("usx = %u:\t", usx);
-  show_bytes((byte_pointer) &usx, sizeof(unsigned short));
-  printf("x = %d:\t", x);
-  show_bytes((byte_pointer) &x, sizeof(int));
-  printf("ux = %u:\t", ux);
-  show_bytes((byte_pointer) &ux, sizeof(unsigned int));
 
   return 0;
 }
