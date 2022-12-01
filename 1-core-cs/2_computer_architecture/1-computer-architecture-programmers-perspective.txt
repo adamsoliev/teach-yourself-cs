@@ -256,13 +256,6 @@ representations, and the properties of the arithmetic operations.
           Going from w-bit to k-bit means we drop the high-order (w - k) bits. In
           decimal terms, this means
 
-          * positive truncation (positive overflow)
-          d_new = d_old - (2^k) (- could be replaced with mod)
-
-          * negative truncation (negative overflow)
-          d_new = d_old + (2^k)
-
-
           * Unsigned
           d_new = d_old % (2^k)
 
@@ -273,49 +266,62 @@ representations, and the properties of the arithmetic operations.
       packing word with flags, addresses in systems programming and
       implementing math packages.
 
-  Integer Arithmetic
-    Unsigned
-      addition:         normal case vs overflow (truncate the result)
-      negation:         x = 0 ? x : 2^w - x
-      multiplication:   normal vs overflow (truncate the result)
+  d) Integer Arithmetic
+      - Unsigned
+          * addition:         normal case vs overflow (truncate the result)
+              - overflowed iff s < x | y, where s = x + y
+              - if overflow: x + y - 2^w
+          * negation:         x = 0 ? x : 2^w - x
+          * multiplication:   normal vs overflow (truncate the result)
+              - if overflow: (x*y) % 2^w
 
-    Two's complement 
-      addition:         negative overflow vs normal vs positive overflow
-      negation:         x = MIN ? MIN : -x
-      multiplication:   negative overflow vs normal vs positive overflow
+      - Two's complement 
+          * addition:         negative overflow vs normal vs positive overflow
+              - positively overflowed iff x > 0 & y > 0 but s <= 0 
+              - negatively overflowed iff x < 0 & y < 0 but s >= 0
+              - if positive overflow: x + y - 2^w
+              - if negative overflow: x + y + 2^w
+          * negation:         x = MIN ? MIN : -x
+          * multiplication:   negative overflow vs normal vs positive overflow
+              - if overflow: (x*y) % 2^w & sign-bit's weight from pos to neg 
 
-    Multiplying by Constant
-
-    Dividing by Powers of 2
-      Integer division always rounds toward zero. That is, it should round down
+      - Integer division always rounds toward zero. That is, it should round down
       a positive result and round up a negative one. 
 
-  Floating Point
-    Value       (-1)^s * M * 2^E
-    Binary      [s] [exp] [frac]
+  e) Floating Point
+      Value       (-1)^s * M * 2^E
+      Binary      [s] [exp] [frac]
 
-    ---------------------------------------------------------
-     Part             Meaning
-    ---------         ---------------------------------------
-      s               sign bit (1 - neg; 0 - pos)
+      ---------------------------------------------------------
+      Part             Meaning
+      ---------         ---------------------------------------
+        s               sign bit (1 - neg; 0 - pos)
+      ---------------------------------------------------------
+        exp [E]         E = e - Bias
+                          e       k-bit unsigned number 
+                          Bias    2^(k-1) - 1
+      ---------------------------------------------------------
+        frac [M]        fractional value 
+              -----------------------------------------------------------------------------
+              Exp         Case            Binary representation             Value
+              ------      ------------    -------------------------         ---------------
+                          Normal          M = 1.f(n-1)...f(1)f(0)           1<=M<2
+              -----------------------------------------------------------------------------
+              0s          Denormalized    M = 0.f(n-1)...f(1)f(0)           0<=M<1
+              -----------------------------------------------------------------------------
+              1s          Special*        M = all zeroes || nonzero         infinity || NaN
+              -----------------------------------------------------------------------------
+              * When exp is 'Normal' (not all 0s or 1s), the 1st bit of M is assumed to be 1, 
+              which adds value (2^0 * 1) to the M. Hence, in the normal case, M is at least 1. 
+              The rest comes from the fractional bits.
+      
+      -----------------------------------------------------------------------
+      C types                       s     exp                 frac
+      -----------------------------------------------------------------------
+      float (single-precision)      1     8 (-126/+127)       23      32-bit
+      double (double-precision)     1     11 (-1022/+1023)    52      64-bit
+      -----------------------------------------------------------------------
 
-    ---------------------------------------------------------
-      exp [E]         E = e - Bias
-                        e       k-bit unsigned number 
-                        Bias    2^(k-1) - 1
-
-    ---------------------------------------------------------
-      frac [M]        fractional value 
-
-            -----------------------------------------------------------------------------
-            Exp         Case            Binary representation             Value
-            ------      ------------    -------------------------         ---------------
-                        Normal          M = 1.f(n-1)...f(1)f(0)           1<=M<2
-            -----------------------------------------------------------------------------
-            0s          Denormalized    M = 0.f(n-1)...f(1)f(0)           0<=M<1
-            -----------------------------------------------------------------------------
-            1s          Special*        M = all zeroes || nonzero         infinity || NaN
-            -----------------------------------------------------------------------------
 
     Rounding
       ----------------------------------------------------------------
@@ -1380,7 +1386,4 @@ b) Issues
     - Races and deadlocks
         * Races occur when programmers make incorrect assumptions about how logical flows are scheduled. 
         * Deadlocks occur when a flow is waiting for an event that will never happen
-    
-
-
 
