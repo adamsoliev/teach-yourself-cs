@@ -264,7 +264,8 @@ int main() {
   assert(D(0x1234));
   */
 
-  assert(int_shifts_are_arithmetic());
+  // 2.62
+  // assert(int_shifts_are_arithmetic());
 
   return 0;
 }
