@@ -297,7 +297,7 @@ representations, and the properties of the arithmetic operations.
       ---------         ---------------------------------------
         s               sign bit (1 - neg; 0 - pos)
       ---------------------------------------------------------
-        exp [E]         E = e - Bias
+        exp [E]         E = e - Bias (normal) | E = 1 - Bias (denormal)
                           e       k-bit unsigned number 
                           Bias    2^(k-1) - 1
       ---------------------------------------------------------
