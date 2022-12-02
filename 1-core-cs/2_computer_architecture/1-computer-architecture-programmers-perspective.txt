@@ -467,35 +467,37 @@ https://godbolt.org/
                           where s must be 1, 2, 4, or 8
 
                       Data Movement Instructions
-                        * src value       - immediate, stored in a register or stored in memory
-                        * dest location   - register or memory address 
+                          * src value       - immediate, stored in a register or stored in memory
+                          * dest location   - register or memory address 
 
-                        - mov (movb, movw, movl, movq)
-                        - movz (movzbw, movzbl, movzwl, movzbq, movzwq)           - move zero-extended 'x' to 'y'
-                        - movs (movsbw, movsbl, movswl, movsbq, movswq, movslq)   - move sign-extended 'x' to 'y'
-                        - pushq & popq (onto and from the program stack)
-                        * movz & movs are used to copy a smaller src value to a larger dest loc
+                          - mov (movb, movw, movl, movq)
+                          - movz* (movzbw, movzbl, movzwl, movzbq, movzwq)           - move zero-extended 'x' to 'y'
+                          - movs* (movsbw, movsbl, movswl, movsbq, movswq, movslq)   - move sign-extended 'x' to 'y'
+                          - pushq** & popq (onto and from the program stack)
+                          * movz & movs are used to copy a smaller src value to a larger dest loc
+                          ** stack grows downward; top element has the lowest address
 
-                      Arithmetic and Logical Operations
-                      ---------------------------------------------------------------
-                      Instruction       Effect            Description
-                      ---------------------------------------------------------------
-                      leaq S,D          D ← &S            Load effective address
-                      inc D             D ← D+1           Increment
-                      dec D             D ← D−1           Decrement
-                      neg D             D ← -D            Negate
-                      not D             D ← ~D            Complement
-                      add S,D           D ← D + S         Add
-                      sub S,D           D ← D − S         Subtract
-                      imul S,D          D ← D ∗ S         Multiply
-                      xor S,D           D ← D ^ S         Exclusive-or
-                      or S,D            D ← D | S         Or
-                      and S,D           D ← D & S         And
-                      sal k,D           D ← D<<k          Left shift
-                      shl k,D           D ← D<<k          Left shift (same as sal)
-                      sar k,D           D ← D>>A k        Arithmetic right shift
-                      shr k,D           D ← D>>L k        Logical right shift
-                      ---------------------------------------------------------------
+                      Arithmetic and Logical Instructions
+                          ---------------------------------------------------------------
+                          Instruction       Effect            Description
+                          ---------------------------------------------------------------
+                          leaq S,D          D ← &S            Load effective address    // used to generate pointers & compactly describe arith ops
+                          inc D             D ← D+1           Increment
+                          dec D             D ← D−1           Decrement
+                          neg D             D ← -D            Negate
+                          not D             D ← ~D            Complement
+                          add S,D           D ← D + S         Add
+                          sub S,D           D ← D − S         Subtract
+                          imul S,D          D ← D ∗ S         Multiply
+                          xor S,D           D ← D ^ S         Exclusive-or
+                          or S,D            D ← D | S         Or
+                          and S,D           D ← D & S         And
+                          sal k,D           D ← D<<k          Left shift
+                          shl k,D           D ← D<<k          Left shift (same as sal)
+                          sar k,D           D ← D>>A k        Arithmetic right shift
+                          shr k,D           D ← D>>L k        Logical right shift
+                          ---------------------------------------------------------------
+                          * shift amount k can be specified with either immediate value or 1-byte register %cl 
 
               * the effect each of these instructions will have on the state. 
 
