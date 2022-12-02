@@ -1,4 +1,10 @@
-// Solutions
+// Book's website
+http://csapp.cs.cmu.edu/3e/students.html
+
+// Labs
+http://csapp.cs.cmu.edu/3e/labs.html
+
+// Unofficial solutions
 https://dreamanddead.github.io/CSAPP-3e-Solutions/
 
 -----------------------------------------------------------------------------------
@@ -355,129 +361,146 @@ actually do everything with just one, but no one really does that). By
 combining those simple circuits, more complicated circuits can be made (such as
 an adder, a multiplexer, etc.). You can use those circuits to make even more
 complicated ones. Like a CPU. 
-source: https://www.reddit.com/r/explainlikeimfive/comments/17faj8/eli5_how_computer_chips_work/
+// source
+https://www.reddit.com/r/explainlikeimfive/comments/17faj8/eli5_how_computer_chips_work/
 -------------------------------------------
 
-C => assembly code (object code) => machine code (executable code)
+// C/C++ | compiler | assembler playground
+https://godbolt.org/
 
-Being able to understand assembly code and how it relates to the
-original C code is a key step in understanding how computers execute programs.
+  C => assembly code (object code) => machine code (executable code)
 
-
-Representation and manipulation of data 
-  
-   Two abstractions are importnat for machine-level programming. 
-
-    a) the format and behavior of a machine-level program is defined by the
-    'instruction set architecture' (ISA) defining:
-      * the processor state
-          a) program counter (address of the next instruction to be executed)
-
-          b) integer register file (16 locations storing 64-bit values)
-
-          c) conditional code registers
-          
-          d) a set of vector registers (each can hold one or multiple int or
-          float values) 
-
-      * the format of instructions (x86-64)
-          a) Instructions can range in length from 1 to 15 bytes (commonly used
-          ones and ones with more operands require a smaller # of bytes).
-
-          b) The instruction format is designed in such a way that from a given
-          starting position, there is a unique decoding of the bytes into
-          machine instructions.
-
-          ----------------------------------------------------------------------------------
-          C declaration       Intel data type       Assembly-code suffix        Size (bytes)
-          ----------------------------------------------------------------------------------
-          char                Byte                          b                       1
-          short               Word                          w                       2
-          int                 Double word                   l                       4
-          long                Quad word                     q                       8
-          char*               Quad word                     q                       8
-          float               Single precision              s                       4
-          double              Double precision              l                       8
-          ----------------------------------------------------------------------------------
+  Being able to understand assembly code and how it relates to the
+  original C code is a key step in understanding how computers execute programs.
 
 
-          Integer registers
-          ------------------------------------------------------------------
-          63                31            15        7
-          ------------------------------------------------------------------
-          %rax              %eax          %ax       %al       Return value
-          %rbx              %ebx          %bx       %bl       Callee saved 
-          %rcx              %ecx          %cx       %cl       4th argument 
-          %rdx              %edx          %dx       %dl       3rd argument 
-          %rsi              %esi          %si       %sil      2nd argument 
-          %rdi              %edi          %di       %dil      1st argument 
-          %rbp              %ebp          %bp       %bpl      Callee saved 
-          %rsp              %esp          %sp       %spl      Stack pointer 
-          %r8               %r8d          %r8w      %r8b      5th argument
-          %r9               %r9d          %r9w      %r9b      6th argument
-          %r10              %r10d         %r10w     %r10b     Callee saved 
-          %r11              %r11d         %r11w     %r11b     Callee saved 
-          %r12              %r12d         %r12w     %r12b     Callee saved 
-          %r13              %r13d         %r13w     %r13b     Callee saved 
-          %r14              %r14d         %r14w     %r14b     Callee saved 
-          %r15              %r15d         %r15w     %r15b     Callee saved 
-          ------------------------------------------------------------------
+  a) Representatioand manipulation of data 
+      Two abstractions are importnat for machine-level programming. 
+          1) the format and behavior of a machine-level program is defined by the
+          'instruction set architecture' (ISA) defining:
+              * the processor state
+                  a) program counter (address of the next instruction to be executed)
+                  b) integer register file (16 locations storing 64-bit values)
+                  c) conditional code registers
+                  d) a set of vector registers (each can hold one or multiple int or
+                  float values) 
 
+              * the format of instructions (x86-64)
+                  a) Instructions can range in length from 1 to 15 bytes (commonly used
+                  ones and ones with more operands require a smaller # of bytes).
 
-          Operand forms supported by x86-64
-          --------------------------------------------------------------------------------------
-          Type                Form              Operand value               Name
-          --------------------------------------------------------------------------------------
-          Immediate           $Imm              Imm                         Immediate
-          Register            ra                R[ra]                       Register
-          Memory              Imm               M[Imm]                      Absolute
-          Memory              (ra)              M[R[ra]]                    Indirect
-          Memory              Imm(rb)           M[Imm + R[rb]]              Base + displacement
-          Memory              (rb,ri)           M[R[rb]+ R[ri]]             Indexed
-          Memory              Imm(rb,ri)        M[Imm + R[rb]+ R[ri]]       Indexed
-          Memory              (,ri,s)           M[R[ri] . s]                Scaled indexed
-          Memory              Imm(,ri,s)        M[Imm + R[ri] . s]          Scaled indexed
-          Memory              (rb,ri,s)         M[R[rb]+ R[ri] . s]         Scaled indexed
-          Memory (general)    Imm(rb,ri,s)      M[Imm + R[rb]+ R[ri] . s]   Scaled indexed
-          --------------------------------------------------------------------------------------
-          * a, b, i - subscripts
-          * $Imm - constant values
-          * ra - arbitrary register a, R[ra] - content of that register viewed in the array of registers
-          * ra - value; (ra) - address in memory where value is stored
-          * Mb[Addr] - a reference to b-byte value stored in memory starting at Addr (subscript b is dropped for simplicity)
-          * M[x] - different addressing modes
+                  b) The instruction format is designed in such a way that from a given
+                  starting position, there is a unique decoding of the bytes into
+                  machine instructions.
 
-          Data Movement Instructions
-            - mov (movb, movw, movl, movq)
-            - movz (movzbw, movzbl, movzwl, movzbq, movzwq)           - move zero-extended 'x' to 'y'
-            - movs (movsbw, movsbl, movswl, movsbq, movswq, movslq)   - move sign-extended 'x' to 'y'
-            - pushq & popq (onto and from the program stack)
+                  c) Intel vs ATT formats (this file follows ATT)
+                      * The size designation suffixes: 'push'/'mov' instead of 'pushq'/'movq'
+                      * The ‘%’ character in front of register names: using 'rbx' instead of '%rbx'
+                      * Describing locations in memory: 'QWORD PTR [rbx]' rather than '(%rbx)'
+                      * Instructions with multiple operands list them in the reverse order. 
 
-          Arithmetic and Logical Operations
-          ---------------------------------------------------------------
-          Instruction       Effect            Description
-          ---------------------------------------------------------------
-          leaq S,D          D ← &S            Load effective address
-          inc D             D ← D+1           Increment
-          dec D             D ← D−1           Decrement
-          neg D             D ← -D            Negate
-          not D             D ← ~D            Complement
-          add S,D           D ← D + S         Add
-          sub S,D           D ← D − S         Subtract
-          imul S,D          D ← D ∗ S         Multiply
-          xor S,D           D ← D ^ S         Exclusive-or
-          or S,D            D ← D | S         Or
-          and S,D           D ← D & S         And
-          sal k,D           D ← D<<k          Left shift
-          shl k,D           D ← D<<k          Left shift (same as sal)
-          sar k,D           D ← D>>A k        Arithmetic right shift
-          shr k,D           D ← D>>L k        Logical right shift
-          ---------------------------------------------------------------
+                  d) Lines beginning with ‘.’ are directives to guide the assembler and linker
 
-      * the effect each of these instructions will have on the state. 
+                  e) Data formats
+                      ----------------------------------------------------------------------------------
+                      C declaration       Intel data type       Assembly-code suffix        Size (bytes)
+                      ----------------------------------------------------------------------------------
+                      char                Byte                          b                       1
+                      short               Word                          w                       2
+                      int                 Double word                   l                       4
+                      long                Quad word                     q                       8
+                      char*               Quad word                     q                       8
+                      float               Single precision              s                       4
+                      double              Double precision              l                       8
+                      ----------------------------------------------------------------------------------
 
-    b) the memory addresses used by a machine-level program are 'virtual
-    addresses'.
+                  f) Accessing information
+                      Integer registers (stores 64-bit values)
+                          ------------------------------------------------------------------
+                          63                31            15        7
+                          ------------------------------------------------------------------
+                          %rax              %eax          %ax       %al       Return value
+                          %rbx              %ebx          %bx       %bl       Callee saved 
+                          %rcx              %ecx          %cx       %cl       4th argument 
+                          %rdx              %edx          %dx       %dl       3rd argument 
+                          %rsi              %esi          %si       %sil      2nd argument 
+                          %rdi              %edi          %di       %dil      1st argument 
+                          %rbp              %ebp          %bp       %bpl      Callee saved 
+                          %rsp              %esp          %sp       %spl      Stack pointer 
+                          %r8               %r8d          %r8w      %r8b      5th argument
+                          %r9               %r9d          %r9w      %r9b      6th argument
+                          %r10              %r10d         %r10w     %r10b     Callee saved 
+                          %r11              %r11d         %r11w     %r11b     Callee saved 
+                          %r12              %r12d         %r12w     %r12b     Callee saved 
+                          %r13              %r13d         %r13w     %r13b     Callee saved 
+                          %r14              %r14d         %r14w     %r14b     Callee saved 
+                          %r15              %r15d         %r15w     %r15b     Callee saved 
+                          ------------------------------------------------------------------
+                          * Instructions that generate 1- or 2-byte values, leave remaining bytes unchanged 
+                          * Instructions that generate 4-byte values, set remaining bytes to zero 
+
+                      Operands 
+                          Instruction [src value operand] [dest loc operand]
+
+                          Forms supported by x86-64: immediate, register and memory reference
+                          --------------------------------------------------------------------------------------
+                          Type                Form              Operand value               Name
+                          --------------------------------------------------------------------------------------
+                          Immediate           $Imm              Imm                         Immediate
+                          Register            ra                R[ra]                       Register
+                          Memory              Imm               M[Imm]                      Absolute
+                          Memory              (ra)              M[R[ra]]                    Indirect
+                          Memory              Imm(rb)           M[Imm + R[rb]]              Base + displacement
+                          Memory              (rb,ri)           M[R[rb]+ R[ri]]             Indexed
+                          Memory              Imm(rb,ri)        M[Imm + R[rb]+ R[ri]]       Indexed
+                          Memory              (,ri,s)           M[R[ri] . s]                Scaled indexed
+                          Memory              Imm(,ri,s)        M[Imm + R[ri] . s]          Scaled indexed
+                          Memory              (rb,ri,s)         M[R[rb]+ R[ri] . s]         Scaled indexed
+                          Memory (general)    Imm(rb,ri,s)      M[Imm + R[rb]+ R[ri] . s]   Scaled indexed
+                          --------------------------------------------------------------------------------------
+                          * a, b, i - subscripts
+                          * $Imm - constant values
+                          * ra - arbitrary register a; ra - content of register is value; (ra) - content of register is address
+                          * Mb[Addr] - a reference to b-byte value stored in memory starting at Addr (subscript b is dropped for simplicity)
+                          * M[x] - different addressing modes
+                          * Imm(rb,ri,s) - an immediate offset Imm, a base register rb, an index register ri , and a scale factor s, 
+                          where s must be 1, 2, 4, or 8
+
+                      Data Movement Instructions
+                        * src value       - immediate, stored in a register or stored in memory
+                        * dest location   - register or memory address 
+
+                        - mov (movb, movw, movl, movq)
+                        - movz (movzbw, movzbl, movzwl, movzbq, movzwq)           - move zero-extended 'x' to 'y'
+                        - movs (movsbw, movsbl, movswl, movsbq, movswq, movslq)   - move sign-extended 'x' to 'y'
+                        - pushq & popq (onto and from the program stack)
+                        * movz & movs are used to copy a smaller src value to a larger dest loc
+
+                      Arithmetic and Logical Operations
+                      ---------------------------------------------------------------
+                      Instruction       Effect            Description
+                      ---------------------------------------------------------------
+                      leaq S,D          D ← &S            Load effective address
+                      inc D             D ← D+1           Increment
+                      dec D             D ← D−1           Decrement
+                      neg D             D ← -D            Negate
+                      not D             D ← ~D            Complement
+                      add S,D           D ← D + S         Add
+                      sub S,D           D ← D − S         Subtract
+                      imul S,D          D ← D ∗ S         Multiply
+                      xor S,D           D ← D ^ S         Exclusive-or
+                      or S,D            D ← D | S         Or
+                      and S,D           D ← D & S         And
+                      sal k,D           D ← D<<k          Left shift
+                      shl k,D           D ← D<<k          Left shift (same as sal)
+                      sar k,D           D ← D>>A k        Arithmetic right shift
+                      shr k,D           D ← D>>L k        Logical right shift
+                      ---------------------------------------------------------------
+
+              * the effect each of these instructions will have on the state. 
+
+          2) the memory addresses used by a machine-level program are 'virtual
+          addresses'.
 
 
 Implementation of control.
@@ -599,12 +622,6 @@ Logic design and the hardware control language
   combinational logic (a number of logic gates assembled together)
   memory elements
   clock signals
-
-
-
-
-
-
 
 ----------------------------------------------------------
 5. Optimizing Program Performance 
