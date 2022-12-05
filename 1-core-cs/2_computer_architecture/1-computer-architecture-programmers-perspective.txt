@@ -628,22 +628,59 @@ https://godbolt.org/
           Switch statement
               - jump table (each entry is addr of corresponding switch index (i) code segment) & switch index
 
-Implementation of procedures
+  c) Implementation of procedures
 
-  A program can manage the storage required by its procedures using a stack,
-  where the stack and the program registers store the information required for
-  passing control and data, and for allocating memory.
+      A program can manage the storage required by its procedures (functions) using a stack,
+      where the stack and the program registers store the information required for
+      passing control and data, and for allocating memory
 
-    a) Passing control.
-    b) Passing data.
-    b) Allocating and deallocating memory.
+          Run-time stack
+                      stack 'bottom'
+              ----------------------------      
+              |             .            |
+              |             .            |      earlier frames
+              |             .            |
+              ---------------------------- 
+              |             .            |      |
+              |         argument n       |      |
+              |             .            |      | frame for calling
+              |             .            |      | function P
+              |         argument 7       |      |
+              | ------------------------ |      |      
+              |       return address     |      |      
+              ----------------------------       
+              |      saved registers*    |      |
+              |      local variables     |      | frame executing  
+              ----------------------------      | function Q (called by P)
+              |   argument build area    |      |
+              ----------------------------        %rsp (stack pointer)
+                      stack 'top'
+              * %rbx, %rbp and %r12-%r15 Q has to preserve content of these registers; if it wants those registers, 
+              it has to push content of those registers to 'saved registers' area of stack, use them and restore
+              them back from the stack 
 
-Implementation of data structures (arrays, structures & unions).
+          a) Passing control
+              --------------------------------
+              Instruction     Description
+              --------------------------------
+              call Label      Procedure call
+              call *Operand   Procedure call
+              ret             Return from call
+              --------------------------------
+              * 'call label' pushes the next instr's addr to stack; then jumps to 'label' addr
+              * 'ret' pops the next instr's addr from the stack and jumps to it
 
-Out-of-bounds memory references and buffer overflow attacks.
+          b) Passing data
+              * the first six args are passed in registers (%rdi, %rsi, %rdx, %rcx, %r8, %r9)
+              * rest in the stack
+          b) Allocating and deallocating memory
 
-Examining the run-time behavior of a machine-level programs using the GDB
-debugger.
+  d) Implementation of data structures (arrays, structures & unions).
+
+  e) Out-of-bounds memory references and buffer overflow attacks.
+
+  f) Examining the run-time behavior of a machine-level programs using the GDB
+  debugger.
 
 ----------------------------------------------------------
 4. Processor Architecture 
