@@ -673,14 +673,68 @@ https://godbolt.org/
           b) Passing data
               * the first six args are passed in registers (%rdi, %rsi, %rdx, %rcx, %r8, %r9)
               * rest in the stack
+
           b) Allocating and deallocating memory
 
   d) Implementation of data structures (arrays, structures & unions).
+      Pointers
+          Key pointer principles
+              Every pointer has an associated type
+              Every pointer has a value
+              Pointers are created with the ‘&’ operator
+              Pointers are dereferenced with the ‘*’ operator
+              Arrays and pointers are closely related
+              Casting from one type of pointer to another changes its type but not its value
+              Pointers can also point to functions
+
+          Some expressions involding an array E
+          ----------------------------------------------------------------------
+          Expression    Type      Value           Assembly code
+          ----------------------------------------------------------------------
+          E             int *     xE              movl %rdx,%rax
+          E[0]          int       M[xE]           movl (%rdx),%eax
+          E[i]          int       M[xE+ 4i]       movl (%rdx,%rcx,4),%eax
+          &E[2]         int *     xE + 8          leaq 8(%rdx),%rax
+          E+i-1         int *     xE + 4i − 4     leaq -4(%rdx,%rcx,4),%rax
+          *(E+i-3)      int       M[xE + 4i − 12] movl -12(%rdx,%rcx,4),%eax
+          &E[i]-E       long      i               movq %rcx,%rax
+          ----------------------------------------------------------------------
+          * E (array of int) and i (index) are stored in %rdx and %rcx, respectively
+          * result stored in either %eax (for data) and %rax (for pointers)
+          
+      * C compiler is able to make many optimizations for code operating on multidimensional arrays of fixed size
+
+      Structs/Unions
+          - Data Alignment
+              Many computer systems place restrictions on the allowable addresses for the
+              primitive data types, requiring that the address for some objects must be a multiple
+              of some value K (typically 2, 4, or 8).
+
+              The x86-64 hardware will work correctly regardless of the alignment of data.
+              However, Intel recommends that data be aligned to improve memory system
+              performance. Their alignment rule is based on the principle that any primitive
+              object of K bytes must have an address that is a multiple of K.
+                  ---------------------------
+                  K     Typeskkkk
+                  ---------------------------
+                  1     char
+                  2     short
+                  4     int, float
+                  8     long, double, char *
+                  ---------------------------
 
   e) Out-of-bounds memory references and buffer overflow attacks.
+  
+      * Stack randomization (a class of address-space layout randomization [ASLR])
 
-  f) Examining the run-time behavior of a machine-level programs using the GDB
-  debugger.
+      * Stack corruption detection
+          Inserts a canary value in the stack frame between local buffet and rest of stack state. 
+          Before restoring the register state and returning from the function, check this canary 
+          value; if it is altered, abort with an error.  
+
+      * Limiting executable code regions
+
+  f) Floating-point code
 
 ----------------------------------------------------------
 4. Processor Architecture 
