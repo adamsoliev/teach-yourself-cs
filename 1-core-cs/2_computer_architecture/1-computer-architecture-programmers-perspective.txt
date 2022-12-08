@@ -7,6 +7,9 @@ http://csapp.cs.cmu.edu/3e/labs.html
 // Unofficial solutions
 https://dreamanddead.github.io/CSAPP-3e-Solutions/
 
+// C/C++ | compiler | assembler playground
+https://godbolt.org/
+
 -----------------------------------------------------------------------------------
 1. A Tour of Computer Systems
 
@@ -364,9 +367,6 @@ complicated ones. Like a CPU.
 // source
 https://www.reddit.com/r/explainlikeimfive/comments/17faj8/eli5_how_computer_chips_work/
 -------------------------------------------
-
-// C/C++ | compiler | assembler playground
-https://godbolt.org/
 
   C => assembly code (object code) => machine code (executable code)
 
