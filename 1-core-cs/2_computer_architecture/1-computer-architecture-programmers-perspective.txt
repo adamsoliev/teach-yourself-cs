@@ -7,9 +7,6 @@ http://csapp.cs.cmu.edu/3e/labs.html
 // Unofficial solutions
 https://dreamanddead.github.io/CSAPP-3e-Solutions/
 
-// C/C++ | compiler | assembler playground
-https://godbolt.org/
-
 -----------------------------------------------------------------------------------
 1. A Tour of Computer Systems
 
@@ -368,7 +365,8 @@ complicated ones. Like a CPU.
 https://www.reddit.com/r/explainlikeimfive/comments/17faj8/eli5_how_computer_chips_work/
 -------------------------------------------
 
-
+// C/C++ | compiler | assembler playground
+https://godbolt.org/
 
   C => assembly code (object code) => machine code (executable code)
 
@@ -742,16 +740,80 @@ https://www.reddit.com/r/explainlikeimfive/comments/17faj8/eli5_how_computer_chi
 4. Processor Architecture 
 ----------------------------------------------------------
 
-Simple instruction set (Y86-64) 
+a) Y86-64 (simple instruciton set)
+    * Components of its state
+        - 15 program registers (all x86-64 registers except %r15)
+            * each can hold 64-bit values
+            * %rsp is a stack pointer (for push/pop/call/return)
+        - three single-bit condition codes (ZF, SF, OF)
+        - program counter (PC)
+        - status code (Stat) for error indication
 
-Background on digital hardware design.
-  Basic buildign blocks used in a processor, how they are connected and
-  operated.
-  HCL language
+    * Set instructions and their encodings
+        -----------------------------------------------------------------------------
+        Byte              0     1       2     3     4     5     6     7     8     9
+        -----------------------------------------------------------------------------
+        halt              0 0 
+        nop               1 0 
+        rrmovq rA, rB     2 0   rA rB   
+        irmovq V, rB      3 0   F  rB   ----------------------- V -------------------
+        rmmovq rA, D(rB)  4 0   rA rB   ----------------------- D -------------------
+        mrmovq D(rB), rA  5 0   rA rB   ----------------------- D -------------------
+        OPq rA, rB        6 fn  rA rB   
+        jXX Dest          7 fn  ---------------------------- Dest ---------------
+        cmovXX rA, rB     2 fn  rA rB   
+        call Dest         8 0   ---------------------------- Dest ---------------
+        ret               9 0 
+        pushq rA          A 0   rA F   
+        popq rA           B 0   rA F   
+        -----------------------------------------------------------------------------
+        * instr encodings range between 1-10 bytes
+            - 1-byte instr specifier
+            - possibly 1-byte register specifier
+            - possibly 8-byte constant word 
+        * fn specifies particular int operation, data movement condition, or branch condition
+        * four types of move instr (regis-to-regis (rr), immed-to-regis (ir), memory-to-register (mr), etc)
+        * OPq     = addq, subq, andq, xorq (fn ranges from 0 to 3)
+        * jXX     = jmp, jle, jl, je, jne, jge, jg (jump instrs) (fn ranges from 0 to 6)
+        * cmovXX  = cmovle, cmovl, cmove, cmovne, cmovge, cmovg (conditional move instrs) (fn ranges from 0 to 6)
+        * 8-byte const word = 'immed data' for irmovq, 'displacement' for rmmovq and mrmovq address specifiers and 'dest' of branches and calls  
+        
+        *** [rmmovq %rsp, 0x123456789abcd (%rdx)] encoding in hex is 4042cdab896745230100
+            - 40 is rmmovq instr code
+            - 42 is src/dest register codes
+            - cdab896745230100 is padded word for displacement
+    
+    * Programming conventions
+    * Handling of exceptional events
+        Status code 
+        ------------------------------------------------
+        Value   Name    Meaning
+        ------------------------------------------------
+        1       AOK     Normal operation
+        2       HLT     halt instruction encountered
+        3       ADR     Invalid address encountered
+        4       INS     Invalid instruction encountered
+        ------------------------------------------------
 
-Y86-64 processor based on sequential operation => transformations => Pipelined processor
+b) Background on digital hardware design.
+    * Basic buildign blocks of a processor (or any digital system)
+        - combinational logic   to compute functions on the bits
+            * logic gates
+        - memory elements       to store the bits
+        - clock signals         to regulate the updating of the memory elements
 
-Logic design and the hardware control language
+    * HCL language
+
+c) Y86-64 processor
+    * Sequential Y86-64 processor
+    * Pipelined Y86-64 processor
+
+d) Tools
+    * Assembler for Y86-64
+    * Simulator for running Y86-64 programs
+    * Simulator for two sequencial and one pipelined processor design
+
+  Logic design and the hardware control language
   combinational logic (a number of logic gates assembled together)
   memory elements
   clock signals
