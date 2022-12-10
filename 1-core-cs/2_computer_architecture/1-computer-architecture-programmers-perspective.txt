@@ -10,6 +10,7 @@ https://dreamanddead.github.io/CSAPP-3e-Solutions/
 // C/C++ | compiler | assembler playground
 https://godbolt.org/
 
+
 -----------------------------------------------------------------------------------
 1. A Tour of Computer Systems
 
@@ -796,17 +797,70 @@ a) Y86-64 (simple instruciton set)
         ------------------------------------------------
 
 b) Background on digital hardware design.
+
     * Basic buildign blocks of a processor (or any digital system)
-        - combinational logic   to compute functions on the bits
-            * logic gates
-        - memory elements       to store the bits
-        - clock signals         to regulate the updating of the memory elements
+
+        - combinational logic   
+            * combinational logic circuits (a number of logic gates wired together) perform different types of operations on word-level data
+
+        - memory elements       
+            * clocked registers (for PC, CC and Stat)
+            * random access memory (RAM)
+                - virtual memory (instruction/data memory)
+                - register file
+
+        - clock signals         
+            * to regulate the updating of the memory elements
 
     * HCL language
 
 c) Y86-64 processor
     * Sequential Y86-64 processor
-    * Pipelined Y86-64 processor
+        - fetch         - read bytes of an instruction from memory using PC
+        - decode        - read up to two operands from register file
+        - execute       - perform arith operation | compute effective address of a mem ref | incr/decr stack pointer
+        - memory        - read/write from/to memory
+        - write back    - write up to two results to register file
+        - PC update     - set PC to address of next instruction
+
+    * Pipelined Y86-64 proessor
+
+        - limitations of pipelining
+            1) nonuniform partitioning
+            2) diminishing returns of deep pipelining
+
+        - Changes needed to make the sequencial processor pipelined
+
+            * PC update, fetch, decode, execute, memory, write back
+            * Insert pipeline register between each stage
+            * Implement Pipeline Control Logic
+
+                - handle branch prediction (bc a throughput is around one instr per cycle and smt you don't know which instr to process next)
+                - handle pipeline hazards (dependencies causing erroneous computation)
+
+                    * data hazards
+                        - stalling (holding back an instr in the decode stage until the instrs generating its 
+                        source operands have passed through the write-back stage)
+                        - forwarding (passing a result value directly from one pipeline stage to an earlier one)
+                    * control hazards
+                        - stalling
+
+                - handle processing ret
+                - handle exceptions
+                    * add hardware to carry exception status code along with other info about instr through the pipeline
+                    * in memory or write-back stage, detect the exception and disallow changing the state by 
+                    following instrs in execute stage
+
+            * Add more complex features
+
+                - handle multicycle instrs (int arith and floating-point operations)
+                    * [option 1] expand capabilities of execute stage; instr remains in this stage for as many clock cycles as it 
+                    requires, causing fetch and decode stages to stall [very slow]
+                    * [option 2] add special hardware functional units to handle such complex operations
+                    
+                - handle interfacing with memory system 
+                    * use stalling for short-duration cache misses
+                    * use exception handling for lon-duration page faults (getting data from disk)
 
 d) Tools
     * Assembler for Y86-64
@@ -922,15 +976,12 @@ d) Tools
         - Rewrite conditional operations in a functional style to enable
           compilation via conditional data transfers
 
-
-
 A good strategy: 
   - experiement and analyze
   - look at inner loops (excessive memory references & poor use of registers).
   - identify critical paths, which gives you a lower bound on time and try to
     steer the compiler towards more efficient implementations, which means
     doing a lot of rewriting of a program.
-
 
 ----------------------------------------------------------
 6. The Memory Hierarchy 
@@ -1041,7 +1092,6 @@ A good strategy:
           sequentially, with stride 1, in the order they are stored in memory.
         - Try to maximize the temporal locality in your programs by using a data object
           as often as possible once it has been read from memory
-
 
 ----------------------------------------------------------
 7. Linking 
@@ -1163,7 +1213,6 @@ modules that can be modified and compiled/linked separately.
                 - partially linked obj file is then loaded into memory and is
                   dynamically linked at run-time
 
-
 ----------------------------------------------------------
 8. Exceptional Control Flow 
 ----------------------------------------------------------
@@ -1233,7 +1282,6 @@ modules that can be modified and compiled/linked separately.
               rather than returning to the instruction that was interrupted by
               the arrival of the signal
 
-
 ----------------------------------------------------------
 9. Virtual Memory 
 ----------------------------------------------------------
@@ -1272,13 +1320,11 @@ modules that can be modified and compiled/linked separately.
           * by adding some bits (mode, read, write) to the page table entry, VM
             can provide page-level memory protection
 
-
   b) This chapter looks at virtual memory from two angles. 
 
       - The first half of the chapter describes how virtual memory works. 
 
       - The second half describes how virtual memory is used and managed by applications.
-
 
   c) Address translation
       - CPU => VA => MMU => PTE address => main memory => PTE => MMU => PA =>
@@ -1357,7 +1403,6 @@ modules that can be modified and compiled/linked separately.
                 |                          |
                 ----------------------------          0
 
-
   d) Memory mapping
       - Manual allocator (mmap)
       - Dynamic allocator (malloc)
@@ -1365,7 +1410,6 @@ modules that can be modified and compiled/linked separately.
 
       - Explicit allocator
       - Implicit allocator (garbage collectors)
-
 
   e) Common errors
       - dereferencing bad pointers
@@ -1376,7 +1420,6 @@ modules that can be modified and compiled/linked separately.
       - misunderstanding pointer arithmetic
       - referencing nonexistent variables
       - introducing memory leaks
-
 
 ----------------------------------------------------------
 10. System-Level I/O
@@ -1454,7 +1497,6 @@ Unix I/O
           * Don’t use scanf or rio_readlineb to read binary files
           * Use the Rio functions for I/O on network sockets
             
-
 ----------------------------------------------------------
 11. Network Programming 
 ----------------------------------------------------------
@@ -1524,8 +1566,6 @@ b) Global IP Internet
               into socket address structures (a linked list of (host|service))
             - 'getnameinfo' is the inverse of above
             - these functions' returns used as input to socket constructors 
-
-
 
 ----------------------------------------------------------
 12. Concurrent Programming 
