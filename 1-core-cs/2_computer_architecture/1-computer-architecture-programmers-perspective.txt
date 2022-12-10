@@ -867,11 +867,6 @@ d) Tools
     * Simulator for running Y86-64 programs
     * Simulator for two sequencial and one pipelined processor design
 
-  Logic design and the hardware control language
-  combinational logic (a number of logic gates assembled together)
-  memory elements
-  clock signals
-
 ----------------------------------------------------------
 5. Optimizing Program Performance 
 ----------------------------------------------------------
