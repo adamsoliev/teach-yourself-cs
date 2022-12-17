@@ -10,6 +10,9 @@ https://dreamanddead.github.io/CSAPP-3e-Solutions/
 // C/C++ | compiler | assembler playground
 https://godbolt.org/
 
+// Notes and Labs by Jonny Kong
+https://github.com/JonnyKong/CMU-15-213-Intro-to-Computer-Systems
+
 
 -----------------------------------------------------------------------------------
 1. A Tour of Computer Systems
@@ -857,7 +860,7 @@ c) Y86-64 processor
                     * [option 1] expand capabilities of execute stage; instr remains in this stage for as many clock cycles as it 
                     requires, causing fetch and decode stages to stall [very slow]
                     * [option 2] add special hardware functional units to handle such complex operations
-                    
+
                 - handle interfacing with memory system 
                     * use stalling for short-duration cache misses
                     * use exception handling for lon-duration page faults (getting data from disk)
@@ -872,27 +875,31 @@ d) Tools
 ----------------------------------------------------------
 1. Use efficient algorithms and data structures
     a) Eliminate unnecessary work
-        - loop inefficiencies 
+        - loop inefficiencies (functional calls, conditional tests, memory references)
             * code motion - identify computations performed multiple times but
               whose result won't change.
 
             * loop unrolling - reduce the # of iterations by computing more
               elements on each iteration. (k x 1 loop unrolling)
+              ----------------------------      -------------------------------------------
+              | for i in range(0, N):    |  ->  | for i in range(0, N, 2):                |
+              |     sum = sum + array[i] |  ->  |     sum = sum + array[i] + array[i + 1] |    
+              ----------------------------      -------------------------------------------
 
-        - function calls
-        - conditinal tests
-        - memory references
+            * to reduce memory references, introduce local variables accumulating within loops
 
 2. Write code that compilers can optimize
     a) Understand capabilities and limitations of optimizing compilers
         - know optimization blockers
             * memory aliasing - If a compiler cannot determine whether or not
-              two pointers may be aliased, it must assume that either case is
-              possible, limiting the set of possible optimizations.
+              two pointers may designate the same location, it must assume that 
+              either case is possible, limiting the set of possible optimizations.
+            [fix] define local variables to tell compiler not to check for aliasing
 
             * function calls - most compilers don't try to determine if a
               function is free of side effects, hence they leave those calls
               intact, limiting the set of possible optimizations.
+            [fix] use inline functions (GCC with -O1 within single file)
 
 3. Use parallelism capabilities of modern processors
     a) Microarchitecture of processor
@@ -927,14 +934,27 @@ d) Tools
                 b) data cache
 
         - Enhancing parallelism - breaking latency bound
-            * multiple accumulators - for associative and commutative
-              operations (int +|*), split the set of combining operations into
-              X parts and combine them at the end. That way, the processor
-              doesn't need to delay one operation until the prev one finishes.
-              (k x k loop unrolling)
+            * multiple accumulators (k x k loop unrolling)
+              for associative and commutative operations (int +|*), split the 
+              set of combining operations into X parts and combine them at the end. 
+              That way, the processor doesn't need to delay one operation until 
+              the prev one finishes. In such a case, instead of one critical-path, you have multiple, 
+              keeping the pipelines filled for all functional units capable of performing that operation. 
+              ----------------------------      -------------------------------------------
+              | for i in range(0, N):    |      | for i in range(0, N, 3):                |
+              |     sum = sum + array[i] |  ->  |     sum1 = sum1 + array[i]              |    
+              ----------------------------      |     sum2 = sum2 + array[i + 1]          |
+                                                |     sum3 = sum3 + array[i + 2]          |
+                                                | sum = sum1 + sum2 + sum3                |
+                                                -------------------------------------------
 
-            * reassociation transformation
-              (k x 1a loop unrolling)
+            * reassociation transformation (k x 1a loop unrolling)
+              can reduce the number of operations along the critical path in a computation, 
+              resulting in better performance by better utilizing the multiple functional 
+              units and their pipelining capabilities. 
+              -------------------------------------
+              | a + b + c + d = (a + b) + (c + d) |
+              -------------------------------------
 
             ** In general, we have found that unrolling a loop and accumulating
             multiple values in parallel is a more reliable way to achieve
@@ -950,7 +970,7 @@ d) Tools
                   control transfers.
 
         - Understanding Memory Performance
-            * Load an store 
+            * Load and store 
 
 4. Issues related to optimizing large programs in the real world
     a) High-level design
@@ -972,43 +992,68 @@ d) Tools
           compilation via conditional data transfers
 
 A good strategy: 
-  - experiement and analyze
-  - look at inner loops (excessive memory references & poor use of registers).
+  - experiment and analyze
+  - look at inner loops (excessive memory references & poor use of registers)
   - identify critical paths, which gives you a lower bound on time and try to
     steer the compiler towards more efficient implementations, which means
-    doing a lot of rewriting of a program.
+    doing a lot of rewriting of a program
 
 ----------------------------------------------------------
 6. The Memory Hierarchy 
 ----------------------------------------------------------
 1. Storage technologies
-    a) RAMs (random access memories)
+
+    a) RAMs (random access memories) - volatile
         - SRAM (static)   - faster/more expensive; used for cache.
         - DRAM (dynamic)  - slower/less expensive; used for main memory and graphics frame buffers.
-    b) ROMs
+            * data flows back and forth between CPU and DRAM memory over buses
+            * bus - a collection of parallel wires that carry addr, data and control signals
+
+    b) ROMs (read-only memories) and flash memories - nonvolatile
+        - since ROMs retain information even after they are turned off (= nonvolatile), certain kind of programs 
+        are stored in them to run when the system is powered up (e.g., PC's BIOS routines) 
+
     c) Disks 
         - Types
             * Rotating
-                - Spingle, platters (2 surfaces on each), tracks, sectors (each 512 bytes) & gaps (stores formatting bits that identify sectors)
+            
+                - Spingle, platters (2 surfaces on each), tracks, sectors (each 512 bytes) & gaps 
+                    * each surface consists of a collection of concentric rings called tracks
+                    * each track is partitioned into a collection of sectors, each of which contains equal # of data bits
+                    * sectors are separeted by gaps, which are formatting bits that id sectors
+
                 - Cylinder - the collection of tracks on all the surfaces that are equidistant from the center of the spindle
+
                 - Recording Zone
                     * the set of cylinders is partitioned into disjoint subsets known as recording zones
                     * each zone consists of a contiguous collections of cylinders
                     * each track in each cylinder in a zone has the same # of
                       sectors, which is determined by the # of sectors that can be
                       packed into the innermost track of the zone.
+                      
                 - Logical Disk Blocks (0, 1, ... B - 1) - simple view of disk geometry presented to the OS
                     * disk controller stands in-between OS and disk,
-                      translating 'logical block' addresses used by the OSJ to
-                      (surface, track, sector) triple and copying the data to
-                      main memory
-            * SSDs (solid state)
+                      translating 'logical block' addresses used by the OS to
+                      (surface, track, sector) triple that ids particular sector. Then
+                      hardware finds this sector, reads bits, and copies them to main memory
+
+            * SSDs (solid state) based on flash memory
                 - A sequence of blocks (each is 32-128 pages), pages (each is 512B to 4KB)
+                - Data are read/written in units of pages; a page can be written only after 
+                  the entire block to which it belongs to has been erased. 
                 - Flash translation layer stands in-between the OS and the flash memory 
 
 2. Locality
-    a) temporal - same loc is likely to be accessed multiple times in the future
+    a) temporal - same location is likely to be accessed multiple times in the future
+
     b) spacial - nearby locations are likely to be accessed in the future
+
+    c) Summary
+        * functions that repeatedly reference the same variables enjoy good temporal locality 
+        * for programs with stride-k reference patterns, the smaller the stride, the better spacial locality;
+          stride-1 reference patterns are a common and important src of spacial locality.
+        * loops have good temporal and spacial locality with respect to instruciton fetches. The smaller 
+          the loop body and the greater # of loop iterations, the better the locality. 
 
 3. Memory Hierarchy (L0 <= L1 <= L2 <= L3 <= L4 <= L5 <= L6)
 
@@ -1040,9 +1085,22 @@ A good strategy:
         - Types of misses
             * conflict miss 
             * capacity miss
+            
     b) Organization
-        - Sets, lines (each consists of [1] valid bit, [m - (b + s)] tag bits, and [2^b] bytes,
-          where s = 2^s sets in a cache and m = # of bits in an address)
+        - Organization
+            * cache is an array of sets
+            * each set contains one or more lines
+            * each line contains a valid bit, [m - (b + s)] tag bits and [2^b] block of data
+            * cache organization induces a partition of the m address bits into t tag bits, s set index bits, and b block offset bits
+                - s ids a set in an array
+                - t ids a line in the found set
+                    * valid bit must be set
+                - b ids offset of the word in the B-byte data block of the line 
+
+            * cache organization can be characterized by the tuple (S, E, B, m)
+            * m - # of bits that form M = 2^m unique addresses in a system
+            * S = 2^s sets; E = lines in a set; B = 2^b bytes in a line
+
         - Cache address
             ---------------------------------------------------
             |   tag bits  |   set bits  |   block-offset bits |
@@ -1059,6 +1117,7 @@ A good strategy:
         - i-cache (read-only)       - can only hold instructions
         - d-cache                   - can only hold data
         - unified-cache             - can hold both instructions and data
+
     d) Performance
         - miss rate       = #misses/#references
         - hit rate        = 1 - misses
@@ -1095,6 +1154,18 @@ Linkers allow us to decompose large programs into smaller, more manageable
 modules that can be modified and compiled/linked separately.
 
 1. Preprocessor (.i) => compiler (.s) => assembler (.o) => linker (progam) => loader => CPU/memory
+
+2. Types
+    a) Static linking
+        * at compile time
+        * relocatable obj files (including static libraries) => executable obj file
+        * static libraries - a copy goes to each program that references it
+
+    b) Dynamic linking
+        * at load or run time
+        * shared obj files + partially linked exec obj files in memory => executable obj file
+        * shared libraries [.so in Linux | ddl in MS] - one copy is shared by all programs
+
 2. Obj files
     a) Types
         - relocatable
