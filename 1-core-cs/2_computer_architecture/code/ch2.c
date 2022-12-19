@@ -106,6 +106,57 @@ float_bits float_twice(float_bits f)
   return sig << 31 | exp << 23 | frac;
 }
 
+// 2.95 ◆◆◆
+// Following the bit-level floating-point coding rules, implement the function with
+// the following prototype:
+// /* Compute 0.5*f. If f is NaN, then return f. */
+// float_bits float_half(float_bits f);
+// For floating-point number f , this function computes 0.5 . f . If f is NaN, your
+// function should simply return f .
+// Test your function by evaluating it for all 232 values of argument f and com-
+// paring the result to what would be obtained using your machine’s floating-point
+// operations.
+float_bits float_half(float_bits f)
+{
+  unsigned sig = f >> 31;
+  unsigned rest = f & 0x7FFFFFFF;
+  unsigned exp = f >> 23 & 0xFF;
+  unsigned frac = f & 0x7FFFFF;
+
+  int is_NAN_or_oo = (exp == 0xFF);
+  if (is_NAN_or_oo)
+  {
+    return f;
+  }
+
+  /*
+   * round to even, we care about last 2 bits of frac
+   * 00 => 0 just >>1
+   * 01 => 0 (round to even) just >>1
+   * 10 => 1 just >>1
+   * 11 => 1 + 1 (round to even) just >>1 and plus 1
+   */
+  int addition = (frac & 0x3) == 0x3;
+
+  if (exp == 0)
+  {
+    frac >>= 1;
+    frac += addition;
+  }
+  else if (exp == 1)
+  {
+    rest >>= 1;
+    rest += addition;
+    exp = rest >> 23 & 0xFF;
+    frac = rest & 0x7FFFFF;
+  }
+  else
+  {
+    exp -= 1;
+  }
+  return sig << 31 | exp << 23 | frac;
+}
+
 int main(int argc, char *argv[])
 {
   // 2.62 ◆◆◆
