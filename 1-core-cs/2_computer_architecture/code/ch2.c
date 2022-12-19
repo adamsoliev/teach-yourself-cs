@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include "utils.h"
 
+// Reference
+// https://dreamanddead.github.io/CSAPP-3e-Solutions/chapter2/
+
 // 2.62 ◆◆◆
 // Write a function int_shifts_are_arithmetic() that yields 1 when run on a
 // machine that uses arithmetic right shifts for data type int and yields 0 otherwise.
@@ -155,6 +158,82 @@ float_bits float_half(float_bits f)
     exp -= 1;
   }
   return sig << 31 | exp << 23 | frac;
+}
+
+// 2.96 ◆◆◆◆
+// Following the bit-level floating-point coding rules, implement the function with
+// the following prototype:
+// /*
+// * Compute (int) f.
+// * If conversion causes overflow or f is NaN, return 0x80000000
+// */
+// int float_f2i(float_bits f);
+// For floating-point number f , this function computes (int) f . Your function
+// should round toward zero. If f cannot be represented as an integer (e.g., it is out
+// of range, or it is NaN), then the function should return 0x80000000.
+// Test your function by evaluating it for all 232 values of argument f and com-
+// paring the result to what would be obtained using your machine’s floating-point
+// operations.
+int float_f2i(float_bits f)
+{
+  unsigned sig = f >> 31;
+  unsigned exp = f >> 23 & 0xFF;
+  unsigned frac = f & 0x7FFFFF;
+  unsigned bias = 0x7F;
+
+  int num;
+
+  unsigned E;
+  unsigned M;
+
+  /*
+   * consider positive numbers
+   *
+   * 0 00000000 00000000000000000000000
+   *   ===>
+   * 0 01111111 00000000000000000000000
+   *   0 <= f < 1
+   * get integer 0
+   *
+   * 0 01111111 00000000000000000000000
+   *   ===>
+   * 0 (01111111+31) 00000000000000000000000
+   *   1 <= f < 2^31
+   * integer round to 0
+   *
+   * 0 (01111111+31) 00000000000000000000000
+   *   ===>
+   * greater
+   *   2^31 <= f < oo
+   * return 0x80000000
+   */
+  if (exp >= 0 && exp < 0 + bias)
+  {
+    /* number less than 1 */
+    num = 0;
+  }
+  else if (exp >= 31 + bias)
+  {
+    /* number overflow */
+    /* or f < 0 and (int)f == INT_MIN */
+    num = 0x80000000;
+  }
+  else
+  {
+    E = exp - bias;
+    M = frac | 0x800000;
+    if (E > 23)
+    {
+      num = M << (E - 23);
+    }
+    else
+    {
+      /* whether sig is 1 or 0, round to zero */
+      num = M >> (23 - E);
+    }
+  }
+
+  return sig ? -num : num;
 }
 
 int main(int argc, char *argv[])
