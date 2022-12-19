@@ -35,6 +35,37 @@ int odd_ones(unsigned x)
   return x;
 }
 
+// 2.66 ◆◆◆
+// Write code to implement the following function:
+// /*
+// * Generate mask indicating leftmost 1 in x. Assume w=32.
+// * For example, 0xFF00 -> 0x8000, and 0x6600 --> 0x4000.
+// * If x = 0, then return 0.
+// */
+// int leftmost_one(unsigned x);
+// Your function should follow the bit-level integer coding rules (page 164),
+// except that you may assume that data type int has w = 32 bits.
+// Your code should contain a total of at most 15 arithmetic, bitwise, and logical
+// operations.
+// Hint: First transform x into a bit vector of the form [0 . . . 011 . . . 1].
+int leftmost_one(unsigned x)
+{
+  /*
+   * first, generate a mask that all bits after leftmost one are one
+   * e.g. 0xFF00 -> 0xFFFF, and 0x6000 -> 0x7FFF
+   * If x = 0, get 0
+   */
+  x |= x >> 1;
+  x |= x >> 2;
+  x |= x >> 4;
+  x |= x >> 8;
+  x |= x >> 16;
+  /*
+   * then, do (mask >> 1) + (mask && 1), in which mask && 1 deals with case x = 0, reserve leftmost bit one
+   * that's we want
+   */
+  return (x >> 1) + (x && 1);
+}
 
 int main(int argc, char *argv[])
 {
@@ -44,5 +75,11 @@ int main(int argc, char *argv[])
   // 2.65 ◆◆◆◆
   // assert(odd_ones(0x10101011));
   // assert(!odd_ones(0x01010101));
+
+  // 2.66 ◆◆◆
+  // assert(leftmost_one(0xFF00) == 0x8000);
+  // assert(leftmost_one(0x6600) == 0x4000);
+  // assert(leftmost_one(0x0) == 0x0);
+
   return 0;
 }
