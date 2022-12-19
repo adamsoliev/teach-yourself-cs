@@ -67,6 +67,45 @@ int leftmost_one(unsigned x)
   return (x >> 1) + (x && 1);
 }
 
+// 2.94 ◆◆◆
+// Following the bit-level floating-point coding rules, implement the function with
+// the following prototype:
+// /* Compute 2*f. If f is NaN, then return f. */
+// float_bits float_twice(float_bits f);
+// For floating-point number f , this function computes 2.0 . f . If f is NaN, your
+// function should simply return f .
+// Test your function by evaluating it for all 232 values of argument f and com-
+// paring the result to what would be obtained using your machine’s floating-point
+// operations.
+typedef unsigned float_bits;
+float_bits float_twice(float_bits f)
+{
+  unsigned sig = f >> 31;
+  unsigned exp = f >> 23 & 0xFF;
+  unsigned frac = f & 0x7FFFFF;
+
+  int is_NAN_or_oo = (exp == 0xFF);
+  if (is_NAN_or_oo)
+    return f;
+  if (exp == 0)
+  {
+    /* Denormalized */
+    frac <<= 1;
+  }
+  else if (exp == 0xFF - 1)
+  {
+    /* twice to oo */
+    exp = 0xFF;
+    frac = 0;
+  }
+  else
+  {
+    /* Normalized */
+    exp += 1;
+  }
+  return sig << 31 | exp << 23 | frac;
+}
+
 int main(int argc, char *argv[])
 {
   // 2.62 ◆◆◆
