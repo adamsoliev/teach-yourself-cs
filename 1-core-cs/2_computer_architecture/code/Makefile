@@ -1,2 +1,2 @@
-ch2: ch2.c
-	$(CC) ch2.c -o ch2 -Wall -Wextra -pedantic -std=c99
+ch5: ch5.c
+	$(CC) ch5.c -o ch5 -Wall -Wextra -pedantic -std=c99
