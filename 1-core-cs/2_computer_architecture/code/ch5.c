@@ -86,6 +86,7 @@ double polyh(double a[], double x, long degree)
 
 int main(int argc, char *argv[])
 {
+    // 5.18 ◆◆◆
     double a[10 + 1] = {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     double x = 2;
     long degree = 10;
