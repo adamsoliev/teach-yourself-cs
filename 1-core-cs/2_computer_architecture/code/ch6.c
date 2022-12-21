@@ -1,9 +1,10 @@
 #include <assert.h>
 #include <stdio.h>
 #include "utils.h"
+#include <stdlib.h>
+#include <time.h>
 
-// Reference
-// https://dreamanddead.github.io/CSAPP-3e-Solutions/chapter3/
+#define DIM 15000
 
 // 6.45 ◆◆◆◆
 // In this assignment, you will apply the concepts you learned in Chapters 5 and 6
@@ -17,62 +18,122 @@ void transpose(int *dst, int *src, int dim)
     for (i = 0; i < dim; i++)
         for (j = 0; j < dim; j++)
         {
-            printf("%d\n", j * dim + i);
             dst[j * dim + i] = src[i * dim + j];
         }
 }
 // where the arguments to the procedure are pointers to the destination (dst) and
 // source (src) matrices, as well as the matrix size N (dim). Your job is to devise a
 // transpose routine that runs as fast as possible.
-/*
-a[3][3]
 
-a[0][1] 0
-a[0][1] 4
-a[0][2] 8
-a[1][1] 12
-a[1][1] 16
-a[1][2] 20
-a[2][1] 24
-a[2][1] 28
-a[2][2] 32
-*/ 
-
-int main(int argc, char *argv[])
+void transpose_optimized(int *dst, int *src, int dim)
 {
-    int a[10][10] = {
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-    int b[10][10] = {
-        {23, 43, 12, 43, 65, 7, 34, 76, 25, 93},
-        {23, 43, 12, 43, 65, 7, 34, 76, 25, 93},
-        {23, 43, 12, 43, 65, 7, 34, 76, 25, 93},
-        {23, 43, 12, 43, 65, 7, 34, 76, 25, 93},
-        {23, 43, 12, 43, 65, 7, 34, 76, 25, 93},
-        {23, 43, 12, 43, 65, 7, 34, 76, 25, 93},
-        {23, 43, 12, 43, 65, 7, 34, 76, 25, 93},
-        {23, 43, 12, 43, 65, 7, 34, 76, 25, 93},
-        {23, 43, 12, 43, 65, 7, 34, 76, 25, 93},
-        {23, 43, 12, 43, 65, 7, 34, 76, 25, 93}};
+    int i, j;
+    for (i = 0; i < dim; i += 8)
+    {
+        for (j = 0; j < dim; j++)
+        {
+            dst[j * dim + i] = src[i * dim + j];
+            dst[j * dim + i + 1] = src[(i + 1) * dim + j];
+            dst[j * dim + i + 2] = src[(i + 2) * dim + j];
+            dst[j * dim + i + 3] = src[(i + 3) * dim + j];
+            dst[j * dim + i + 4] = src[(i + 4) * dim + j];
+            dst[j * dim + i + 5] = src[(i + 5) * dim + j];
+            dst[j * dim + i + 6] = src[(i + 6) * dim + j];
+            dst[j * dim + i + 7] = src[(i + 7) * dim + j];
+        }
+    }
+}
 
-    transpose(&b[0][0], &a[0][0], 10);
-    assert(b[4][5] == 0);
-    // for (int i = 0; i < 10; i++)
+int main(void)
+{
+    // Seed the random number generator with the current time
+    srand(time(NULL));
+
+    // Create the source and destination matrices
+    // int src[DIM][DIM];
+    // int dst[DIM][DIM];
+
+    // Had to allocate using malloc to fix Segmentation fault error when I increased DIM to 10k
+    // Allocate memory for the matrices using malloc
+    int *src = malloc(DIM * DIM * sizeof(int));
+    int *dst = malloc(DIM * DIM * sizeof(int));
+
+    // Initialize the source matrix with random values
+    // int i, j;
+    // for (i = 0; i < DIM; i++)
     // {
-    //     for (int j = 0; j < 10; j++)
+    //     for (j = 0; j < DIM; j++)
     //     {
-    //         printf("%d", b[i][j]);
+    //         src[i][j] = rand();
     //     }
-    //     printf("\n");
     // }
-    // printf("a[4][5]: %d\n", a[4][5]);
-    // assert(a[4][5] == 7);
+
+    // Initialize the source matrix with random values
+    int i, j;
+    for (i = 0; i < DIM; i++)
+    {
+        for (j = 0; j < DIM; j++)
+        {
+            src[i * DIM + j] = rand();
+        }
+    }
+
+    // Measure the execution time of the original transpose function
+    clock_t start, end;
+    start = clock();
+    transpose((int *)dst, (int *)src, DIM);
+    end = clock();
+    double time_elapsed_original = (double)(end - start) / CLOCKS_PER_SEC;
+
+    // Check that the transpose was successful
+    // for (i = 0; i < DIM; i++)
+    // {
+    //     for (j = 0; j < DIM; j++)
+    //     {
+    //         assert(dst[i][j] == src[j][i]);
+    //     }
+    // }
+
+    // Check that the transpose was successful
+    for (i = 0; i < DIM; i++)
+    {
+        for (j = 0; j < DIM; j++)
+        {
+            assert(dst[i * DIM + j] == src[j * DIM + i]);
+        }
+    }
+
+    // Measure the execution time of the optimized transpose function
+    start = clock();
+    transpose_optimized((int *)dst, (int *)src, DIM);
+    end = clock();
+    double time_elapsed_optimized = (double)(end - start) / CLOCKS_PER_SEC;
+
+    // Check that the transpose was successful
+    // for (i = 0; i < DIM; i++)
+    // {
+    //     for (j = 0; j < DIM; j++)
+    //     {
+    //         assert(dst[i][j] == src[j][i]);
+    //     }
+    // }
+
+    for (i = 0; i < DIM; i++)
+    {
+        for (j = 0; j < DIM; j++)
+        {
+            assert(dst[i * DIM + j] == src[j * DIM + i]);
+        }
+    }
+
+    // Free the memory allocated for the matrices
+    free(src);
+    free(dst);
+
+    // Print the execution time statistics
+    printf("Original transpose function execution time: %f seconds\n", time_elapsed_original);
+    printf("Optimized transpose function execution time: %f seconds\n", time_elapsed_optimized);
+    printf("Optimized transpose function is %.2fx faster than original\n", time_elapsed_original / time_elapsed_optimized);
+
+    return 0;
 }
