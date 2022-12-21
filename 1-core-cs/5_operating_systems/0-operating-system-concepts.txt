@@ -1,0 +1,324 @@
+// Official website supporting Operating System Concepts
+// https://www.os-book.com/OS10/
+
+
+-----------------------------------------------------------------------------------
+
+-----------------------------------------
+Description                     Chapters
+-----------------------------------------
+Overview                        1-2 
+Process management              3-5
+Process synchronization         6-8
+Memory management               9-10
+Storage management              11-12              
+File systems                    13-15
+Security and protection         16-17
+Advanced topics                 18-19
+Cases studies                   20-21
+-----------------------------------------
+
+Notes to students
+    1) Solve practice exercies at the end of each chapter
+    2) Read through the study guide (https://www.os-book.com/OS10/study-guide/Study-Guide.pdf)
+
+------------------------- PART 1 -------------------------
+------------ Overview -------------
+
+1. Introduction 
+2. Operating-System Structures 
+
+------------------------- PART 2 -------------------------
+------------- Process Management  --------------
+
+3. Processes 
+4. Threads and Concurrency 
+5. CPU Scheduling 
+
+------------------------- PART 3 -------------------------
+------------- Process Synchronization  --------------
+
+6. Synchronization Tools 
+7. Synchronization Examples 
+8. Deadlocks 
+
+------------------------- PART 4 -------------------------
+----- Memory Management  ----
+
+9. Main Memory 
+10. Virtual Memory 
+
+------------------------- PART 5 -------------------------
+----- Storage Management  ----
+
+11. Mass-Storage Structure
+12. I/O Systems 
+
+------------------------- PART 6 -------------------------
+----- File System  ----
+
+13. File-System Interface
+14. File-System Implementation
+15. File-System Internals
+
+------------------------- PART 7 -------------------------
+----- Security Protection  ----
+
+16. Security
+17. Protection
+
+------------------------- PART 8 -------------------------
+-------------------- Advanced Topics ---------------------
+
+18. Virtual Machines
+19. Networks and Distributed Systems
+
+------------------------- PART 9 -------------------------
+---------------------- Case Studies ----------------------
+
+20. The Linux System
+21. Window 10
+
+-----------------------------------------------------------------------------------
+NVS - Nonvolatile storage
+NVM - Nonvolatile electrical storage
+
+
+-----------------------------------------
+1. Introduction
+-----------------------------------------
+
+In order to understand the role of OS:
+    * Understand hardware resources: CPU, memory, I/O devices, and storage
+    * Understand OS pieces and input/output/functions of each
+    * Data Structures used in OSs
+
+OS consists of:
+    * kernel                    - always running
+    * middleware frameworks     - ease app development and provide features
+    * system programs           - aid in managing the system while it is running
+
+Hardware Resources
+    * CPU ---- system bus ---- memory
+               |  |  |  |
+            device controllers 
+                   | 
+                devices
+        - OS has a device driver for each device controller
+
+    * Three key aspects of the system
+        1) Interrupts
+            * Basic implementation
+                - device controller raises an interrupt by asserting a singal to CPU
+                - CPU catches the interrupt and dispatches it to interrupt handler (via interrupt address table)
+                - the handler clears the interrupt by servicing the device
+
+            * Advanced implementation 
+                - CPU has two interrupt request lines (nonmaskable and maskable). 
+                Nonmaskable is for unrecoverable memory errors. Maskable is for 
+                interrupts that can be deferred during critical processing. 
+                - Since computers have more devices than entries in interrupt address table,
+                each entry points to the head of a list of interrupt handlers.
+                - Interrupt mechanism also implements a system of interrupt priority levels, enabling 
+                to differenciate low-priority vs high-priority interrupts and defer appropriately.
+
+        2) Storage structure
+            * Registers 
+            * Cache
+            * Main memory
+            * Nonvolatile memory (e.g., disk, firmware)
+            [1] Storage systems are organized in a hierarchy according to storage cost/capacity, 
+            access/transfer time and volatility
+
+        3) I/O structure
+            * Since system-bus interrupt-based I/O produces high overhead, the modern systems use direct
+            memory access (DMA), which enables a device controller to transfer an entire block of 
+            data directly to/from the device and main memory, with no intervention from CPU. Only
+            one interrupt is generated per block, to tell the driver that the operation was successful.  
+            
+            * Some high-end systems use switch rather than bus architecture, enabling multiple 
+            components to talk to each other concurrently, rather than competing for cycles on 
+            a shared bus. 
+
+    * Computer-System Architecture
+        1) Single-Processor Systems
+        2) Multiprocessor Systems
+        3) Clustered Systems
+
+Operating System Operatios
+    * Multiprogramming and Multitasking
+        - Having multiple processes (programs) and switching among them
+        - Requires 
+            * having those processes in memory at the same time
+            * know-how what to execute next and how to keep track of all
+            * reasonable response time, enabled by virtual memory (VM)
+
+    * Dual-Mode and Multimode Operation
+        - User vs kernel mode and switch between them when interrupt, trap or syscall occurs
+
+    * Timer
+        - Doesn't allow a user program to get stuck in an infinite loop or fail to call syscall 
+        and never return control to the OS
+
+    * Resource Management
+        - Process Management
+            • Creating and deleting both user and system processes
+            • Scheduling processes and threads on the CPUs
+            • Suspending and resuming processes
+            • Providing mechanisms for process synchronization
+            • Providing mechanisms for process communication
+
+        - Memory Management
+            • Keeping track of which parts of memory are currently being used and
+            which process is using them
+            • Allocating and deallocating memory space as needed
+            • Deciding which processes (or parts of processes) and data to move into
+            and out of memory
+            
+        - File-System Management
+            • Creating and deleting files
+            • Creating and deleting directories to organize files
+            • Supporting primitives for manipulating files and directories
+            • Mapping files onto mass storage
+            • Backing up files on stable (nonvolatile) storage media
+
+        - Mass-Storage Management
+            The operating system is responsible for the following activities in 
+            connection with 'secondary storage' management:
+            • Mounting and unmounting
+            • Free-space management
+            • Storage allocation
+            • Disk scheduling
+            • Partitioning
+            • Protection
+
+            Because secondary storage is used frequently and extensively, it must be used
+            efficiently. The entire speed of operation of a computer may hinge on the speeds
+            of the secondary storage subsystem and the algorithms that manipulate that
+            subsystem.
+
+        - Cache Management
+            • Careful selection of the cache size and of a replacement policy
+            can result in greatly increased performance
+
+            • In a hierarchical storage structure, the same data may appear in different
+            levels of the storage system. Since the various CPUs can all execute in parallel, 
+            we must make sure that an update to the data in one cache is immediately 
+            reflected in all other caches where that data resides (cache coherency).
+
+        - I/O System Management
+            • A memory-management component that includes buffering, caching, and spooling
+            • Ageneral device-driver interface
+            • Drivers for specific hardware devices
+
+    * Security and Protection
+    * Virtualization 
+        - Single set of hardware hosting multiple virtual machines (different OSs) managed by virtual machine manager
+    * Distributed Systems
+
+Data Structures
+    * Kernel Data Structures
+        - Lists, Stacks, and Queues
+        - Trees
+        - Hash Functions and Maps
+        - Bitmaps
+
+How OS are used
+    * Computing Environments
+        - Traditional Computing
+        - Mobile Computing
+        - Client–Server Computing
+        - Peer-to-Peer Computing
+        - Cloud Computing
+        - Real-Time Embedded Systems
+
+Free and Open-Source Operating Systems
+    * GNU/Linux
+    * BSD UNIX
+    * Solaris
+
+
+-----------------------------------------
+2. Operating-System Structures 
+-----------------------------------------
+What services an operating system provides                      | Users view
+
+How they are provided and how they are debugged                 | Programmers view
+
+What the various methodologies are for designing such systems   |
+How operating systems are created                               | OS designers view
+How a computer starts its operating system.                     |
+
+
+What services an operating system provides
+    * User interface
+        - GUI
+        - Command-Line Interface (CLI)
+            * gets and executes the next user-specified command
+            * either contains the code to execute the commands or implements most commands through system programs
+
+    * Program execution
+    * I/O operations
+    * File-system manipulation
+    * Communications 
+        - Implemented via shared memory
+        - Implemented via message passing
+
+    * Error detections
+        - Detect and correct errors in CPU, memory hardware, I/O devices, user program
+
+    * Resource allocation
+    * Logging 
+    * Protection and security
+        - Protect all system resources and defend external I/O devices
+
+How they are provided and how they are debugged
+    * System calls provide an interface to the services discussed above. APIs, RTEs (run-time envs) 
+    often wrap the system calls to provide the above services
+
+        - Types of system calls
+            • Process control
+                ◦ create process, terminate process
+                ◦ load, execute
+                ◦ get process attributes, set process attributes
+                ◦ wait event, signal event
+                ◦ allocate and free memory
+            • File management
+                ◦ create file, delete file
+                ◦ open, close
+                ◦ read, write, reposition
+                ◦ get file attributes, set file attributes
+            • Device management
+                ◦ request device, release device
+                ◦ read, write, reposition
+                ◦ get device attributes, set device attributes
+                ◦ logically attach or detach devices
+            • Information maintenance
+                ◦ get time or date, set time or date
+                ◦ get system data, set system data
+                ◦ get process, file, or device attributes
+                ◦ set process, file, or device attributes
+            • Communications
+                ◦ create, delete communication connection
+                ◦ send, receive messages
+                ◦ transfer status information
+                ◦ attach or detach remote devices
+            • Protection
+                ◦ get file permissions
+                ◦ set file permissions
+
+    * System services (utilities)
+        - File management
+        - Status information
+        - File modification (e.g., text editors)
+        - Programming-language support (e.g., compilers, assemblers, debuggers, interpreters)
+        - Program loading and execution (absolute, relocatable and overlay loaders; linkage editors)
+        - Communications
+        - Background services (network daemons, process schedulers, system error monitoring)
+        - Others (web browsers, word processors and text formatters, spreadsheets, database systems, 
+          compilers, plotting and statistical-analysis packages, and games)
+
+
+
+
+
