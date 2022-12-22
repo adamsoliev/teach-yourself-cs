@@ -11,7 +11,7 @@ Shell
         storing the tokens in an array of character strings
 
         when the user enters 'ps -ael' at the prompt, the values stored in the
-args array are: args[0] = "ps" args[1] = "-ael" args[2] = NULL
+        args array are: args[0] = "ps" args[1] = "-ael" args[2] = NULL
 
     2. Providing a history feature
     3. Adding support of input and output redirection
@@ -21,6 +21,7 @@ args array are: args[0] = "ps" args[1] = "-ael" args[2] = NULL
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #define MAX_LINE 80 // the maximum length command
@@ -49,14 +50,52 @@ int main(void) {
         // tokenize
         args[token_index] = strtok(input, " ");
         while (args[token_index] != NULL) {
-            printf("token at %d index is %s\n", token_index, args[token_index]);
+            // printf("token at %d index is %s\n", token_index,
+            // args[token_index]);
             token_index++;
             fflush(stdout);
             args[token_index] = strtok(NULL, " ");
         }
-        token_index = 0;
 
-        // run_child_process();
+        // printf("The number of tokens: %d\n", token_index);
+
+        // extract command
+        char *command = args[0];
+
+        // extract command options
+        int num_options = token_index - 1 + 1; // remove program and add NULL
+        char *options[num_options];
+        // memcpy(options, args + 1, sizeof(char *) * token_index - 1);
+        memcpy(options, args, sizeof(char *) * (token_index + 1));
+        options[token_index] = NULL; // end
+
+        // for (int i = 0; i < num_options; i++) {
+        //     printf("option at %d index is %s\n", i, options[i]);
+        // }
+
+        // Fork a child
+        pid_t child_pid = fork();
+        if (child_pid < 0) {
+            // fork error
+            fprintf(stderr, "Fork failed\n");
+            return 1;
+        } else if (child_pid == 0) {
+            // child process
+            // execlp("/bin/ls", "ls", NULL);
+            // execvp(command, options);
+            char path_to_program[] = "/bin/";
+            char *program          = args[0];
+            strcat(path_to_program, program);
+            execv(path_to_program, options);
+            printf("Child process\n");
+        } else {
+            // parent process
+            int status;
+            waitpid(child_pid, &status, 0);
+            printf("Child process terminated with status %d\n", status);
+        }
+
+        token_index = 0;
         /**
          * After reading user input, the steps are:
          * (1) fork a child process using fork()
