@@ -1,5 +1,5 @@
 // Official website supporting Operating System Concepts
-// https://www.os-book.com/OS10/
+https://www.os-book.com/OS10/
 
 
 -----------------------------------------------------------------------------------
@@ -382,7 +382,7 @@ Process
                                   |                  |
                                   |                  |
                                    -- wait queues* <-
-                * there are various type of wait queues
+                * there are various types of wait queues
                                            
         - CPU Scheduling - CPU scheduler selecting a process from a ready queue
 
