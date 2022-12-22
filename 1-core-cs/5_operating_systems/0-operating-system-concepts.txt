@@ -93,11 +93,6 @@ In order to understand the role of OS:
     * Understand OS pieces and input/output/functions of each
     * Data Structures used in OSs
 
-OS consists of:
-    * kernel                    - always running
-    * middleware frameworks     - ease app development and provide features
-    * system programs           - aid in managing the system while it is running
-
 Hardware Resources
     * CPU ---- system bus ---- memory
                |  |  |  |
@@ -145,22 +140,18 @@ Hardware Resources
         2) Multiprocessor Systems
         3) Clustered Systems
 
-Operating System Operatios
-    * Multiprogramming and Multitasking
-        - Having multiple processes (programs) and switching among them
-        - Requires 
-            * having those processes in memory at the same time
-            * know-how what to execute next and how to keep track of all
-            * reasonable response time, enabled by virtual memory (VM)
+Operating System 
 
-    * Dual-Mode and Multimode Operation
-        - User vs kernel mode and switch between them when interrupt, trap or syscall occurs
+    * OS consists of:
+        - kernel                    - always running
+        - middleware frameworks     - ease app development and provide features
+        - system programs           - aid in managing the system while it is running
 
-    * Timer
-        - Doesn't allow a user program to get stuck in an infinite loop or fail to call syscall 
-        and never return control to the OS
-
-    * Resource Management
+    * OS enables multiprogramming (multiple processes) and multitasking (switching among them)
+    * OS can run either in dual-mode (user vs kernel) and multimode (user vs ... vs kernel)
+    * OS implements a timer, disabling a user program to get stuck in an infinite loop or fail 
+    to call syscall and never return control to the OS
+    * OS provides Resource Management
         - Process Management
             • Creating and deleting both user and system processes
             • Scheduling processes and threads on the CPUs
@@ -210,8 +201,7 @@ Operating System Operatios
             • A memory-management component that includes buffering, caching, and spooling
             • Ageneral device-driver interface
             • Drivers for specific hardware devices
-
-    * Security and Protection
+    * OS provides Security and Protection
     * Virtualization 
         - Single set of hardware hosting multiple virtual machines (different OSs) managed by virtual machine manager
     * Distributed Systems
@@ -223,34 +213,21 @@ Data Structures
         - Hash Functions and Maps
         - Bitmaps
 
-How OS are used
-    * Computing Environments
-        - Traditional Computing
-        - Mobile Computing
-        - Client–Server Computing
-        - Peer-to-Peer Computing
-        - Cloud Computing
-        - Real-Time Embedded Systems
-
 Free and Open-Source Operating Systems
     * GNU/Linux
     * BSD UNIX
     * Solaris
 
-
 -----------------------------------------
 2. Operating-System Structures 
 -----------------------------------------
 What services an operating system provides                      | Users view
-
 How they are provided and how they are debugged                 | Programmers view
-
 What the various methodologies are for designing such systems   |
 How operating systems are created                               | OS designers view
 How a computer starts its operating system.                     |
 
-
-What services an operating system provides
+User's view
     * User interface
         - GUI
         - Command-Line Interface (CLI)
@@ -272,7 +249,7 @@ What services an operating system provides
     * Protection and security
         - Protect all system resources and defend external I/O devices
 
-How they are provided and how they are debugged
+Programmer's view
     * System calls provide an interface to the services discussed above. APIs, RTEs (run-time envs) 
     often wrap the system calls to provide the above services
 
@@ -317,8 +294,121 @@ How they are provided and how they are debugged
         - Background services (network daemons, process schedulers, system error monitoring)
         - Others (web browsers, word processors and text formatters, spreadsheets, database systems, 
           compilers, plotting and statistical-analysis packages, and games)
+    
+    * Linkers and Loaders
+        - Src program => [compiler] => obj file => [linker] => exe file  => [loader] => program in memory
+                                                       |                        |
+                                                  other obj files         dynamically linkered
+                                                                               libraries
 
+OS Designer's view
+    * Goals => policies => mechanisms
+        - Define goals and specifications (user goals and system goals) 
+        - Those goals determine the OS's policies and the OS implements those policies through mechanisms
+            * Separate policy from mechanism
+            * Mechanisms determine how to do something; policies determine what will be done
+            * The separation of policy and mechanism is important for flexibility
+            * A general mechanism flexible enough to work across a range of policies is preferable
+    
+    * Implementation
+        - Now, most are written in higher-level languages such as C or C++, with small amounts 
+        of the system written in assembly language.
 
+        - As is true in other systems, major performance improvements in operating
+        systems are more likely to be the result of better data structures and algorithms
+        than of excellent assembly-language code.
 
+        - Only a small amount of the code is critical to high performance;
+        the interrupt handlers, I/O manager, memory manager, and CPU scheduler are
+        probably the most critical routines.
 
+    * Operating-System Structure
+        - A common approach is to partition the task into small components, or modules, rather
+        than have one single system. Each of these modules should be a well-defined
+        portion of the system, with carefully defined interfaces and functions.
+
+        - Monolithic (UNIX and Window) vs Layered vs Microkernel (Darwin and QNX) Structure
+
+        - The best current methodology for operating-system design involves
+        using loadable kernel modules (LKMs). Here, the kernel has a set of core
+        components and can link in additional services via modules, either at boot time
+        or during run time. (common modern UNIX, such as Linux, macOS, and Solaris, as well as Windows)
+
+    * Operating-System Debugging
+        - The performance of an operating system can be monitored using either counters or tracing
+            * Counter: (per-process) ps, top        | (system-wide) vmstat, netstat, iostat
+            * Tracing: (per-process) strace, gdb    | (system-wide) perf, tcpdump
+
+            * BCC (BPF Compiler Collection) (https://github.com/iovisor/bcc). What makes BCC 
+            especially powerful is that its tools can be used on live production systems that 
+            are running critical applications without causing harm to the system.
+
+-----------------------------------------
+3. Processes 
+-----------------------------------------
+One of the most important aspects of an operating system is how it
+schedules threads onto available processing cores. Several choices for
+designing CPU schedulers are available to programmers.
+
+Process
+    * Layout in memory
+        ---------   max
+        | stack | 
+        ---------
+        |   ↓   |
+        |       |
+        |   ↑   |
+        ---------
+        | heap  |
+        ---------
+        | data  |
+        ---------
+        | text  |
+        ---------   0
+    * States: new, running, waiting, ready, terminated
+    * Process Control Block (PCB) - representation of a process in the OS 
+        - Process state             - above
+        - PC                        - address of next instruction 
+        - CPU registers             - general-purpose, etc and condition-code info 
+        - CPU-scheduling info       - process priority, pointers to scheduling queues, etc
+        - Memory-management info    - value of base/limit registers, page/segment tables
+        - Accounting info           - amount of CPU and real time used, time limits, account numbers, job/process numbers
+        - I/O status info           - list of I/O devices allocated to the process, list of open files, etc
+        - Thread info                
+    * Process scheduling
+        - # of processes vs # of cores; I/O-bound vs CPU-bound processes
+        - Scheduling Queues
+            a new process ---> ready queue --------> CPU --->
+                                  |                  |
+                                  |                  |
+                                   -- wait queues* <-
+                * there are various type of wait queues
+                                           
+        - CPU Scheduling - CPU scheduler selecting a process from a ready queue
+
+        - Context Switch
+            * Save the state (PCB) of cur process for later restoration; load the state of next process 
+    * Operations on Processes
+        - Process Creation: process tree, pid
+        - Process Termination: cascading termination, zombie and orphan processes
+    * Interprocess Communication (IPC)
+        - Process can be either independent and cooperating (it can affect or be 
+        affected by the other processes executing in the system); the latter requires IPC
+        - Types of IPC
+            * shared memory - can be implemented using either unbounded or bounded buffer that 
+            producer/consumer processes share
+            * message passing
+                • Direct (A <-> B) or indirect communication (A <-> mailbox <-> B)
+                • Synchronous (wait until send/receive finish) or asynchronous communication
+                • Automatic or explicit buffering - messages exchanged by communicating processes 
+                reside in a temporary queue, which could be implemented
+                    - Zero capacity         | synch 
+                    - Bounded capacity      | limited asynch ( anynch until the buffer reaches capacity)
+                    - Unbounded capacity    | asynch
+
+        - Two common forms of client–server communication are sockets and
+        remote procedure calls (RPCs). Sockets allow two processes on different
+        machines to communicate over a network. RPCs abstract the concept of
+        function (procedure) calls in such a way that a function can be invoked on
+        another process that may reside on a separate computer.
 
