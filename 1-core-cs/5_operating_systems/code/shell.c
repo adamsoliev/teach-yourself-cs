@@ -18,7 +18,9 @@ Shell
     4. Allowing the parent and child processes to communicate via a pipe
 */
 
+#include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -26,14 +28,36 @@ Shell
 
 #define MAX_LINE 80 // the maximum length command
 
+void tokenize(const char *string, char *delimiter, char **tokens,
+              size_t *num_tokens, size_t max_tokens_sz) {
+    assert(string != NULL); // make sure string is a valid pointer
+    assert(tokens != NULL); // make sure tokens array is a valid pointer
+
+    char *str_copy = malloc(strlen(string) + 1);
+    strcpy(str_copy, string);
+
+    assert(str_copy != NULL); // make sure str_copy is a valid pointer
+
+    char *token  = strtok(str_copy, delimiter);
+    size_t index = 0;
+    while (token != NULL) {
+        // make sure tokens array is large enough
+        assert(index < max_tokens_sz);
+
+        tokens[index] = token;
+        index++;
+        token = strtok(NULL, delimiter);
+    }
+    *num_tokens = index;
+};
+
 int main(void) {
     char input[100];
     char *args[(MAX_LINE / 2) + 1]; // command line arguments
-    int should_run  = 1;            // flag to determine when to exit program
-    int token_index = 0;
+    int should_run = 1;             // flag to determine when to exit program
     while (should_run) {
 
-        printf("osh>");
+        printf("osh> ");
         // ensure that whole prev state of stdout buffer is printed
         fflush(stdout);
 
@@ -47,27 +71,24 @@ int main(void) {
             break;
         }
 
-        // tokenize
-        args[token_index] = strtok(input, " ");
-        while (args[token_index] != NULL) {
-            // printf("token at %d index is %s\n", token_index,
-            // args[token_index]);
-            token_index++;
-            fflush(stdout);
-            args[token_index] = strtok(NULL, " ");
-        }
+        char *delimiter = " ";
+        size_t num_tokens;
+        tokenize(input, delimiter, args, &num_tokens,
+                 (size_t)(MAX_LINE / 2) + 1);
 
-        // printf("The number of tokens: %d\n", token_index);
-
-        // extract command
-        char *command = args[0];
+        // // tokenize
+        // args[token_index] = strtok(input, " ");
+        // while (args[token_index] != NULL) {
+        //     // printf("token at %d index is %s\n", token_index,
+        //     // args[token_index]);
+        //     token_index++;
+        //     args[token_index] = strtok(NULL, " ");
+        // }
 
         // extract command options
-        int num_options = token_index - 1 + 1; // remove program and add NULL
-        char *options[num_options];
-        // memcpy(options, args + 1, sizeof(char *) * token_index - 1);
-        memcpy(options, args, sizeof(char *) * (token_index + 1));
-        options[token_index] = NULL; // end
+        char *options[num_tokens];
+        memcpy(options, args, sizeof(char *) * (num_tokens + 1));
+        options[num_tokens] = NULL; // end
 
         // for (int i = 0; i < num_options; i++) {
         //     printf("option at %d index is %s\n", i, options[i]);
@@ -81,12 +102,13 @@ int main(void) {
             return 1;
         } else if (child_pid == 0) {
             // child process
-            // execlp("/bin/ls", "ls", NULL);
-            // execvp(command, options);
             char path_to_program[] = "/bin/";
             char *program          = args[0];
             strcat(path_to_program, program);
+
+            // Execute the program
             execv(path_to_program, options);
+
             printf("Child process\n");
         } else {
             // parent process
@@ -95,30 +117,12 @@ int main(void) {
             printf("Child process terminated with status %d\n", status);
         }
 
-        token_index = 0;
         /**
          * After reading user input, the steps are:
          * (1) fork a child process using fork()
          * (2) the child process will invoke execvp()
          * (3) parent will invoke wait() unless command included &
          */
-    }
-    return 0;
-}
-
-int run_child_process() {
-    pid_t pid;
-    /* fork a child process */
-    pid = fork();
-    if (pid < 0) { /* error occurred */
-        fprintf(stderr, "Fork Failed");
-        return 1;
-    } else if (pid == 0) { /* child process */
-        printf("Child Proc-pedanticess Running");
-    } else { /* parent process */
-        /* parent will wait for the child to complete */
-        // wait(NULL);
-        printf("Child Complete");
     }
     return 0;
 }
