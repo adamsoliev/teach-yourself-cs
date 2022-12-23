@@ -63,6 +63,11 @@ char **add_null(char **array, size_t array_length) {
     return new_array;
 }
 
+void remove_newline(char *string) {
+    assert(string != NULL);
+    string[strcspn(string, "\n")] = 0; // replace either '\n' or '\0' with '\0'
+}
+
 void print_array(char *str, char **array, size_t size) {
     assert(str != NULL);
     assert(array != NULL);
@@ -78,14 +83,10 @@ int main(void) {
     int should_run = 1;             // flag to determine when to exit program
     while (should_run) {
         printf("osh> ");
-        // ensure that whole prev state of stdout buffer is printed
-        fflush(stdout);
+        fflush(stdout); // ensure "osh>" is printed
 
-        // TODO: move to a func
-        // take in user input and remove ending '\n'
         fgets(input, sizeof(input), stdin);
-        int len    = strcspn(input, "\n");
-        input[len] = '\0';
+        remove_newline(input);
 
         // check for exit
         if (strcmp(input, "exit") == 0) {
@@ -93,10 +94,8 @@ int main(void) {
         }
 
         // Tokenize and put results into args
-        char *delimiter = " ";
         size_t num_tokens;
-        tokenize(input, delimiter, args, &num_tokens,
-                 (size_t)(MAX_LINE / 2) + 1);
+        tokenize(input, " ", args, &num_tokens, (size_t)(MAX_LINE / 2) + 1);
 
         // Copy and add NULL
         char **args_with_null = add_null(args, num_tokens);
