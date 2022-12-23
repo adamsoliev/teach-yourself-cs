@@ -35,7 +35,6 @@ void tokenize(const char *string, char *delimiter, char **tokens,
 
     char *str_copy = malloc(strlen(string) + 1);
     strcpy(str_copy, string);
-
     assert(str_copy != NULL); // make sure str_copy is a valid pointer
 
     char *token  = strtok(str_copy, delimiter);
@@ -56,13 +55,12 @@ int main(void) {
     char *args[(MAX_LINE / 2) + 1]; // command line arguments
     int should_run = 1;             // flag to determine when to exit program
     while (should_run) {
-
         printf("osh> ");
         // ensure that whole prev state of stdout buffer is printed
         fflush(stdout);
 
+        // take in user input and remove ending '\n'
         fgets(input, sizeof(input), stdin);
-        // remove '\n' at the end of input line
         int len    = strcspn(input, "\n");
         input[len] = '\0';
 
@@ -76,23 +74,10 @@ int main(void) {
         tokenize(input, delimiter, args, &num_tokens,
                  (size_t)(MAX_LINE / 2) + 1);
 
-        // // tokenize
-        // args[token_index] = strtok(input, " ");
-        // while (args[token_index] != NULL) {
-        //     // printf("token at %d index is %s\n", token_index,
-        //     // args[token_index]);
-        //     token_index++;
-        //     args[token_index] = strtok(NULL, " ");
-        // }
-
         // extract command options
         char *options[num_tokens];
         memcpy(options, args, sizeof(char *) * (num_tokens + 1));
         options[num_tokens] = NULL; // end
-
-        // for (int i = 0; i < num_options; i++) {
-        //     printf("option at %d index is %s\n", i, options[i]);
-        // }
 
         // Fork a child
         pid_t child_pid = fork();
@@ -108,7 +93,6 @@ int main(void) {
 
             // Execute the program
             execv(path_to_program, options);
-
             printf("Child process\n");
         } else {
             // parent process
