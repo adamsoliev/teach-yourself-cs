@@ -134,7 +134,7 @@ void print_test_result(bool passed, const char *function_name) {
 }
 
 // --------------------------- TESTS ---------------------------
-void test_notconcurrent_add_null() {
+void test_concurrent_off__add_null() {
     char *array[]       = {"one", "two", "three"};
     size_t array_length = 3;
     char **new_array    = add_null(array, array_length, false);
@@ -145,7 +145,7 @@ void test_notconcurrent_add_null() {
     print_test_result(true, __FUNCTION__);
 };
 
-void test_concurrent_add_null() {
+void test_concurrent_on__add_null() {
     char *array[]       = {"one", "two", "three", "&"};
     size_t array_length = 4;
     char **new_array    = add_null(array, array_length, true);
@@ -159,8 +159,8 @@ void test_concurrent_add_null() {
 // ------------------------- TESTS END -------------------------
 
 void run_test_suite() {
-    test_notconcurrent_add_null();
-    test_concurrent_add_null();
+    test_concurrent_off__add_null();
+    test_concurrent_on__add_null();
 }
 
 int main(void) {
