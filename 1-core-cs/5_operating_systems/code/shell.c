@@ -59,6 +59,7 @@ int main(void) {
         // ensure that whole prev state of stdout buffer is printed
         fflush(stdout);
 
+        // TODO: move to a func
         // take in user input and remove ending '\n'
         fgets(input, sizeof(input), stdin);
         int len    = strcspn(input, "\n");
@@ -74,11 +75,15 @@ int main(void) {
         tokenize(input, delimiter, args, &num_tokens,
                  (size_t)(MAX_LINE / 2) + 1);
 
+        // TODO: handle different cases of num_tokens
+
+        // TODO: move to a func
         // extract command options
         char *options[num_tokens];
         memcpy(options, args, sizeof(char *) * (num_tokens + 1));
         options[num_tokens] = NULL; // end
 
+        // TODO: move to a func
         // Fork a child
         pid_t child_pid = fork();
         if (child_pid < 0) {
