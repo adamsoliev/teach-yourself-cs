@@ -68,6 +68,34 @@ void remove_newline(char *string) {
     string[strcspn(string, "\n")] = 0; // replace either '\n' or '\0' with '\0'
 }
 
+void run_command(char **args, size_t num_tokens) {
+    // Copy and add NULL
+    char **args_with_null = add_null(args, num_tokens);
+
+    pid_t child_pid = fork();
+    if (child_pid < 0) {
+        // fork error
+        fprintf(stderr, "Fork failed\n");
+    } else if (child_pid == 0) {
+        // child process
+        char path_to_program[] = "/bin/";
+        char *program          = args_with_null[0];
+        strcat(path_to_program, program);
+
+        // Execute the program
+        execv(path_to_program, args_with_null);
+        // execvp(args[0], args);
+
+        printf("Child process\n");
+    } else {
+        // parent process
+        int status;
+        waitpid(child_pid, &status, 0);
+        printf("Child process terminated with status %d\n", status);
+    }
+    free(args_with_null);
+}
+
 void print_array(char *str, char **array, size_t size) {
     assert(str != NULL);
     assert(array != NULL);
@@ -97,33 +125,7 @@ int main(void) {
         size_t num_tokens;
         tokenize(input, " ", args, &num_tokens, (size_t)(MAX_LINE / 2) + 1);
 
-        // Copy and add NULL
-        char **args_with_null = add_null(args, num_tokens);
-
-        // TODO: move to a func
-        // Fork a child
-        pid_t child_pid = fork();
-        if (child_pid < 0) {
-            // fork error
-            fprintf(stderr, "Fork failed\n");
-            return 1;
-        } else if (child_pid == 0) {
-            // child process
-            char path_to_program[] = "/bin/";
-            char *program          = args[0];
-            strcat(path_to_program, program);
-
-            // Execute the program
-            execv(path_to_program, args_with_null);
-
-            free(args_with_null);
-            printf("Child process\n");
-        } else {
-            // parent process
-            int status;
-            waitpid(child_pid, &status, 0);
-            printf("Child process terminated with status %d\n", status);
-        }
+        run_command(args, num_tokens);
 
         /**
          * After reading user input, the steps are:
