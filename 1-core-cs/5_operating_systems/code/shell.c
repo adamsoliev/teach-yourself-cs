@@ -30,8 +30,10 @@ Shell
 
 void tokenize(const char *string, char *delimiter, char **tokens,
               size_t *num_tokens, size_t max_tokens_sz) {
-    assert(string != NULL); // make sure string is a valid pointer
-    assert(tokens != NULL); // make sure tokens array is a valid pointer
+    assert(string != NULL);    // make sure string is a valid pointer
+    assert(delimiter != NULL); // make sure delimiter is a valid pointer
+    assert(tokens != NULL);    // make sure tokens array is a valid pointer
+    assert(max_tokens_sz > 0); // make sure array has at least some space
 
     char *str_copy = malloc(strlen(string) + 1);
     strcpy(str_copy, string);
@@ -49,6 +51,26 @@ void tokenize(const char *string, char *delimiter, char **tokens,
     }
     *num_tokens = index;
 };
+
+char **add_null(char **array, size_t array_length) {
+    assert(array != NULL);
+    assert(array_length > 0);
+    char **new_array = malloc((array_length + 1) * sizeof(char *));
+    for (size_t i = 0; i < array_length; i++) {
+        new_array[i] = array[i];
+    }
+    new_array[array_length] = NULL;
+    return new_array;
+}
+
+void print_array(char *str, char **array, size_t size) {
+    assert(str != NULL);
+    assert(array != NULL);
+    for (size_t i = 0; i < size; i++) {
+        printf("%s: ", str);
+        printf("%s\n", array[i]);
+    }
+}
 
 int main(void) {
     char input[100];
@@ -70,18 +92,14 @@ int main(void) {
             break;
         }
 
+        // Tokenize and put results into args
         char *delimiter = " ";
         size_t num_tokens;
         tokenize(input, delimiter, args, &num_tokens,
                  (size_t)(MAX_LINE / 2) + 1);
 
-        // TODO: handle different cases of num_tokens
-
-        // TODO: move to a func
-        // extract command options
-        char *options[num_tokens];
-        memcpy(options, args, sizeof(char *) * (num_tokens + 1));
-        options[num_tokens] = NULL; // end
+        // Copy and add NULL
+        char **args_with_null = add_null(args, num_tokens);
 
         // TODO: move to a func
         // Fork a child
@@ -97,7 +115,9 @@ int main(void) {
             strcat(path_to_program, program);
 
             // Execute the program
-            execv(path_to_program, options);
+            execv(path_to_program, args_with_null);
+
+            free(args_with_null);
             printf("Child process\n");
         } else {
             // parent process
