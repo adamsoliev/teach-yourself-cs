@@ -1,18 +1,6 @@
 /*
-shell is a parent process
-    listens to user input
-    creates either a) or b) type of child process
-        a) osh>cat prog.c              // parent waits child to terminate
-        b) osh>cat prog.c &            // child runs concurrently
-
 Shell
-    1. Creating the child process and executing the command in the child
-        parsing what the user has entered into separate tokens
-        storing the tokens in an array of character strings
-
-        when the user enters 'ps -ael' at the prompt, the values stored in the
-        args array are: args[0] = "ps" args[1] = "-ael" args[2] = NULL
-
+    [DONE] 1. Creating the child process and executing the command in the child
     2. Providing a history feature
     3. Adding support of input and output redirection
     4. Allowing the parent and child processes to communicate via a pipe
