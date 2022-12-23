@@ -19,6 +19,7 @@ Shell
 */
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +27,7 @@ Shell
 #include <sys/wait.h>
 #include <unistd.h>
 
-#define MAX_LINE 80 // the maximum length command
+#define MAX_LINE 80 // the maximum length commando
 
 void tokenize(const char *string, char *delimiter, char **tokens,
               size_t *num_tokens, size_t max_tokens_sz) {
@@ -52,14 +53,26 @@ void tokenize(const char *string, char *delimiter, char **tokens,
     *num_tokens = index;
 };
 
-char **add_null(char **array, size_t array_length) {
+char **add_null(char **array, size_t array_length, bool concurrent) {
     assert(array != NULL);
     assert(array_length > 0);
-    char **new_array = malloc((array_length + 1) * sizeof(char *));
-    for (size_t i = 0; i < array_length; i++) {
+    size_t new_array_length       = array_length + 1;
+    size_t new_array_last_element = array_length;
+
+    if (concurrent) { // array has unnecessary '&' at the end
+        new_array_length       = array_length;
+        new_array_last_element = array_length - 1;
+    }
+    /*
+    {'a', 'b', 'c', '&'}  =>  {'a', 'b', 'c', 'NULL'}
+    {'a', 'b', 'c'}       =>  {'a', 'b', 'c', 'NULL'}
+    */
+
+    char **new_array = malloc((new_array_length) * sizeof(char *));
+    for (size_t i = 0; i < new_array_length; i++) {
         new_array[i] = array[i];
     }
-    new_array[array_length] = NULL;
+    new_array[new_array_last_element] = NULL;
     return new_array;
 }
 
@@ -70,7 +83,12 @@ void remove_newline(char *string) {
 
 void run_command(char **args, size_t num_tokens) {
     // Copy and add NULL
-    char **args_with_null = add_null(args, num_tokens);
+    bool concurrent = (strcmp(args[num_tokens - 1], "&") == 0);
+
+    if (concurrent)
+        printf("Concurrent is on\n");
+
+    char **args_with_null = add_null(args, num_tokens, concurrent);
 
     pid_t child_pid = fork();
     if (child_pid < 0) {
@@ -89,9 +107,12 @@ void run_command(char **args, size_t num_tokens) {
         printf("Child process\n");
     } else {
         // parent process
-        int status;
-        waitpid(child_pid, &status, 0);
-        printf("Child process terminated with status %d\n", status);
+        if (!concurrent) {
+            int status;
+            waitpid(child_pid, &status, 0);
+            printf("Child process terminated with status %d\n", status);
+        }
+        printf("Parent process\n");
     }
     free(args_with_null);
 }
@@ -105,7 +126,46 @@ void print_array(char *str, char **array, size_t size) {
     }
 }
 
+void print_test_result(bool passed, const char *function_name) {
+    if (passed)
+        printf("[PASSED] %s()\n", function_name);
+    else
+        printf("[FAILED] %s()\n", function_name);
+}
+
+// --------------------------- TESTS ---------------------------
+void test_notconcurrent_add_null() {
+    char *array[]       = {"one", "two", "three"};
+    size_t array_length = 3;
+    char **new_array    = add_null(array, array_length, false);
+
+    assert(new_array[0] == array[0]);
+    assert(new_array[3] == NULL);
+    free(new_array);
+    print_test_result(true, __FUNCTION__);
+};
+
+void test_concurrent_add_null() {
+    char *array[]       = {"one", "two", "three", "&"};
+    size_t array_length = 4;
+    char **new_array    = add_null(array, array_length, true);
+
+    assert(new_array[0] == array[0]);
+    assert(new_array[3] == NULL);
+    free(new_array);
+    print_test_result(true, __FUNCTION__);
+};
+
+// ------------------------- TESTS END -------------------------
+
+void run_test_suite() {
+    test_notconcurrent_add_null();
+    test_concurrent_add_null();
+}
+
 int main(void) {
+    run_test_suite();
+
     char input[100];
     char *args[(MAX_LINE / 2) + 1]; // command line arguments
     int should_run = 1;             // flag to determine when to exit program
@@ -126,13 +186,6 @@ int main(void) {
         tokenize(input, " ", args, &num_tokens, (size_t)(MAX_LINE / 2) + 1);
 
         run_command(args, num_tokens);
-
-        /**
-         * After reading user input, the steps are:
-         * (1) fork a child process using fork()
-         * (2) the child process will invoke execvp()
-         * (3) parent will invoke wait() unless command included &
-         */
     }
     return 0;
 }
