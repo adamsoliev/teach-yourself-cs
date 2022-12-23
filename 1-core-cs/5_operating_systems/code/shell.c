@@ -5,6 +5,15 @@ Shell
     3. Adding support of input and output redirection
     4. Allowing the parent and child processes to communicate via a pipe
 */
+/*
+ls -lah &
+ls -lah
+ls -lah &
+ls -lah
+ls -lah
+ls -lah &
+               commands => [...] => removed the oldest ones if full
+*/
 
 #include <assert.h>
 #include <stdbool.h>
@@ -105,6 +114,7 @@ void run_command(char **args, size_t num_tokens) {
     free(args_with_null);
 }
 
+// --------------------------- UTILS ---------------------------
 void print_array(char *str, char **array, size_t size) {
     assert(str != NULL);
     assert(array != NULL);
@@ -120,6 +130,7 @@ void print_test_result(bool passed, const char *function_name) {
     else
         printf("[FAILED] %s()\n", function_name);
 }
+// ------------------------ UTILS END --------------------------
 
 // --------------------------- TESTS ---------------------------
 void test_concurrent_off__add_null() {
@@ -163,11 +174,15 @@ int main(void) {
 
         fgets(input, sizeof(input), stdin);
         remove_newline(input);
+        // push input to history deque
 
         // check for exit
         if (strcmp(input, "exit") == 0) {
             break;
         }
+        // else if (strcmp(input, "hist") == 0) {
+        //     printHistory();
+        // }
 
         // Tokenize and put results into args
         size_t num_tokens;
