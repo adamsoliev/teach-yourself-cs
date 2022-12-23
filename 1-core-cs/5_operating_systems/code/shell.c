@@ -19,19 +19,19 @@ Shell
 
 void tokenize(const char *string, char *delimiter, char **tokens,
               size_t *num_tokens, size_t max_tokens_sz) {
-    assert(string != NULL);    // make sure string is a valid pointer
-    assert(delimiter != NULL); // make sure delimiter is a valid pointer
-    assert(tokens != NULL);    // make sure tokens array is a valid pointer
-    assert(max_tokens_sz > 0); // make sure array has at least some space
+    assert(string != NULL);    // ensure string is a valid pointer
+    assert(delimiter != NULL); // ensure delimiter is a valid pointer
+    assert(tokens != NULL);    // ensure tokens array is a valid pointer
+    assert(max_tokens_sz > 0); // ensure array has at least some space
 
     char *str_copy = malloc(strlen(string) + 1);
     strcpy(str_copy, string);
-    assert(str_copy != NULL); // make sure str_copy is a valid pointer
+    assert(str_copy != NULL); // ensure str_copy is a valid pointer
 
     char *token  = strtok(str_copy, delimiter);
     size_t index = 0;
     while (token != NULL) {
-        // make sure tokens array is large enough
+        // ensure tokens array is large enough
         assert(index < max_tokens_sz);
 
         tokens[index] = token;
