@@ -78,6 +78,7 @@ void print_queue(Queue *q) {
 }
 // --------------------------- DEQUE END ---------------------------
 
+// ---------------------------- PROGRAM ----------------------------
 #define MAX_LINE 80 // the maximum length command
 
 void tokenize(const char *string, char *delimiter, char **tokens,
@@ -171,6 +172,7 @@ void run_command(char **args, size_t num_tokens) {
     }
     free(args_with_null);
 }
+// -------------------------- PROGRAM END --------------------------
 
 // --------------------------- UTILS ---------------------------
 void print_array(char *str, char **array, size_t size) {
