@@ -134,11 +134,14 @@ void remove_newline(char *string) {
 }
 
 void run_command(char **args, size_t num_tokens) {
+    assert(args != NULL);
+    assert(num_tokens > 0);
+
     // Copy and add NULL
     bool concurrent = (strcmp(args[num_tokens - 1], "&") == 0);
 
     if (concurrent)
-        printf("Concurrent is on\n");
+        printf("Child process is running concurrently\n");
 
     char **args_with_null = add_null(args, num_tokens, concurrent);
 
@@ -180,6 +183,7 @@ void print_array(char *str, char **array, size_t size) {
 }
 
 void print_test_result(bool passed, const char *function_name) {
+    assert(function_name != NULL);
     if (passed)
         printf("[PASSED] %s()\n", function_name);
     else
