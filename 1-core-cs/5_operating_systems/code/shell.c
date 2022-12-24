@@ -129,7 +129,8 @@ char **add_null(char **array, size_t array_length, bool concurrent) {
 
 void remove_newline(char *string) {
     assert(string != NULL);
-    string[strcspn(string, "\n")] = 0; // replace either '\n' or '\0' with '\0'
+    // replace either '\n' or '\0' with '\0'
+    string[strcspn(string, "\n")] = 0;
 }
 
 void run_command(char **args, size_t num_tokens) {
@@ -209,11 +210,27 @@ void test_concurrent_on__add_null() {
     print_test_result(true, __FUNCTION__);
 };
 
+void test_end_with_newline__remove_newline() {
+    char str[] = "string\n"; // this can't be string literal as it is read-only
+    remove_newline(str);
+    assert(strcmp(str, "string") == 0);
+    print_test_result(true, __FUNCTION__);
+}
+
+void test_end_with_null__remove_newline() {
+    char str[] = "string";
+    remove_newline(str);
+    assert(strcmp(str, "string") == 0);
+    print_test_result(true, __FUNCTION__);
+}
+
 // ------------------------- TESTS END -------------------------
 
 void run_test_suite() {
     test_concurrent_off__add_null();
     test_concurrent_on__add_null();
+    test_end_with_newline__remove_newline();
+    test_end_with_null__remove_newline();
 }
 
 int main(void) {
