@@ -7,6 +7,7 @@ Shell
 */
 
 #include <assert.h>
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,8 +79,53 @@ void print_queue(Queue *q) {
 }
 // --------------------------- DEQUE END ---------------------------
 
+// --------------------------- UTILS ---------------------------
+void print_array(char *str, char **array, size_t size) {
+    assert(str != NULL);
+    assert(array != NULL);
+    for (size_t i = 0; i < size; i++) {
+        printf("%s: ", str);
+        printf("%s\n", array[i]);
+    }
+}
+
+void print_test_result(bool passed, const char *function_name) {
+    assert(function_name != NULL);
+    if (passed)
+        printf("[PASSED] %s()\n", function_name);
+    else
+        printf("[FAILED] %s()\n", function_name);
+}
+// ------------------------ UTILS END --------------------------
+
 // ---------------------------- PROGRAM ----------------------------
 #define MAX_LINE 80 // the maximum length command
+
+/// @brief returns if redirect and if so, type
+/// @param array contains command-line arguments
+/// @param size array size
+/// @return 1 - into_file redirect, 2 - out_file redirect
+int is_redirect(char **array, size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        if (strcmp(array[i], ">") == 0) { // ls > out.txt
+            return 1;
+        } else if (strcmp(array[i], "<") == 0) { // sort < out.txt
+            return 2;
+        }
+    }
+    return 0;
+}
+
+/// @brief gets filename from command-line arguments
+/// @param array contains command-line arguments
+/// @param size array size
+/// @return filename if redirect or NULL
+char *get_filename(char **array, size_t size, int redirect) {
+    assert(redirect > 0);   // should be either 1 or 2
+    return array[size - 1]; // last item is filename
+}
+
+void remove_redirect(char **array, size_t size) {}
 
 void tokenize(const char *string, char *delimiter, char **tokens,
               size_t *num_tokens, size_t max_tokens_sz) {
@@ -134,15 +180,10 @@ void remove_newline(char *string) {
     string[strcspn(string, "\n")] = 0;
 }
 
-void run_command(char **args, size_t num_tokens) {
+void run_command(char **args, size_t num_tokens, bool concurrent, int redirect) {
     assert(args != NULL);
     assert(num_tokens > 0);
-
-    // Copy and add NULL
-    bool concurrent = (strcmp(args[num_tokens - 1], "&") == 0);
-
-    if (concurrent)
-        printf("Child process is running concurrently\n");
+    print_array("Commandline: ", args, num_tokens);
 
     char **args_with_null = add_null(args, num_tokens, concurrent);
 
@@ -155,11 +196,18 @@ void run_command(char **args, size_t num_tokens) {
         char path_to_program[] = "/bin/";
         char *program = args_with_null[0];
         strcat(path_to_program, program);
-
-        // Execute the program
-        execv(path_to_program, args_with_null);
-        // execvp(args[0], args);
-
+        if (redirect == 1) {
+            char *filename = get_filename(args, num_tokens, redirect);
+            int filename_fd =
+                open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            dup2(filename_fd, STDOUT_FILENO);
+            execv(path_to_program, args_with_null);
+            close(filename_fd);
+        } else {
+            // Execute the program
+            execv(path_to_program, args_with_null);
+            // execvp(args[0], args);
+        }
         printf("Child process\n");
     } else {
         // parent process
@@ -168,31 +216,13 @@ void run_command(char **args, size_t num_tokens) {
             waitpid(child_pid, &status, 0);
             printf("Child process terminated with status %d\n", status);
         }
+        // wait(NULL);
         printf("Parent process\n");
     }
     free(args_with_null);
 }
+
 // -------------------------- PROGRAM END --------------------------
-
-// --------------------------- UTILS ---------------------------
-void print_array(char *str, char **array, size_t size) {
-    assert(str != NULL);
-    assert(array != NULL);
-    for (size_t i = 0; i < size; i++) {
-        printf("%s: ", str);
-        printf("%s\n", array[i]);
-    }
-}
-
-void print_test_result(bool passed, const char *function_name) {
-    assert(function_name != NULL);
-    if (passed)
-        printf("[PASSED] %s()\n", function_name);
-    else
-        printf("[FAILED] %s()\n", function_name);
-}
-// ------------------------ UTILS END --------------------------
-
 // --------------------------- TESTS ---------------------------
 void test_concurrent_off__add_null() {
     char *array[] = {"one", "two", "three"};
@@ -242,7 +272,6 @@ void run_test_suite() {
 int main(void) {
     run_test_suite();
 
-    char input[100];
     char *args[(MAX_LINE / 2) + 1]; // command line arguments
     int should_run = 1;             // flag to determine when to exit program
 
@@ -250,6 +279,7 @@ int main(void) {
     init(&q);
 
     while (should_run) {
+        char input[100];
         printf("osh> ");
         fflush(stdout); // ensure "osh>" is printed
 
@@ -271,7 +301,14 @@ int main(void) {
         size_t num_tokens;
         tokenize(input, " ", args, &num_tokens, (size_t)(MAX_LINE / 2) + 1);
 
-        run_command(args, num_tokens);
+        // move cleaning here
+        // if concurrent, remove &
+        // if redirect, remove redirect and filename
+        bool concurrent =
+            (strcmp(args[num_tokens - 1], "&") == 0); // determine if concurrent
+        int redirect = is_redirect(args, num_tokens); // determine if redirect
+
+        run_command(args, num_tokens, concurrent, redirect);
     }
     return 0;
 }
