@@ -180,10 +180,10 @@ void remove_newline(char *string) {
     string[strcspn(string, "\n")] = 0;
 }
 
-void run_command(char **args, size_t num_tokens, bool concurrent, int redirect) {
+void run_command(char **args, size_t num_tokens, bool concurrent,
+                 int redirect) {
     assert(args != NULL);
     assert(num_tokens > 0);
-    print_array("Commandline: ", args, num_tokens);
 
     char **args_with_null = add_null(args, num_tokens, concurrent);
 
@@ -259,7 +259,6 @@ void test_end_with_null__remove_newline() {
     assert(strcmp(str, "string") == 0);
     print_test_result(true, __FUNCTION__);
 }
-
 // ------------------------- TESTS END -------------------------
 
 void run_test_suite() {

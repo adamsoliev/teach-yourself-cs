@@ -1,5 +1,5 @@
 // Official website supporting Operating System Concepts
-https://www.os-book.com/OS10/
+// https://www.os-book.com/OS10/
 
 
 -----------------------------------------------------------------------------------
@@ -382,7 +382,7 @@ Process
                                   |                  |
                                   |                  |
                                    -- wait queues* <-
-                * there are various types of wait queues
+                * there are various type of wait queues
                                            
         - CPU Scheduling - CPU scheduler selecting a process from a ready queue
 
@@ -411,4 +411,89 @@ Process
         machines to communicate over a network. RPCs abstract the concept of
         function (procedure) calls in such a way that a function can be invoked on
         another process that may reside on a separate computer.
+
+
+-----------------------------------------
+4. Threads and Concurrency 
+-----------------------------------------
+
+Overview
+Multicore programming
+Multithreading Models
+Thread Libraries
+Implicit Threading
+Threading Issues
+Operating System Examples
+
+* Thread creation and managemenet
+
+               Process
+ -----------------------------------
+|       code    data    files       |
+ -----------------------------------
+| registers | registers | registers |
+| stack     | stack     | stack     |   
+| PC        | PC        | PC        |   
+ -----------------------------------
+|    \      |     \     |     \     |
+|    /      |     /     |     /     | → thread
+|    \      |     \     |     \     |
+ -----------------------------------
+
+ * Benefits of a thread
+    - Responsiveness
+    - Resource sharing
+    - Economy
+    - Scalability
+
+* Programming challenges of multicore systems 
+    - Dividing and balancing the work 
+    - Data splitting
+    - Data dependency
+    - Testing and debugging
+    
+* Types of parallelism
+    - Data parallelism - distributing subsets of data across multiple cores
+    - Task parallelism - distributing tasks (threads) across multiple cores 
+
+* Multithreading Models
+    - User vs kernel threads
+    - Establishing a relationship between user vs kernel threads
+        * many-to-one model (many user threads map to one kernel thread)
+        * one-to-one model (Linux/Windows)
+        * many-to-many model 
+    - Asynchronous (parent/child run concurrently) vs synchronous threading (parent waits until children terminate)
+
+* Implicit threading - creation of threads by compilers and run-time libraries
+    - Thread pools
+        * Create a certain # of threads and put them into the pool. Each incoming task is submitted to the pool.
+        If a thread is available, the task is served. Otherwise, it is queued till a thread becomes available. 
+    - Fork join
+        * Synchronious version of thread pools where a certain # of threads is created by a library to 
+        complete a can-be-parallel task.
+    - OpenMP
+        * a set of compiler directives as well as an API for programs written in
+        C, C++, or FORTRAN that provides support for parallel programming in shared-memory environments.
+        OpenMP identifies parallel regions as blocks of code that may run in parallel. It creates as many 
+        threads as there are processing cores in the system.
+    - Grand Central Dispatch
+        * GCD schedules tasks for run-time execution by placing them on either serial or concurrent dispatch
+        queue. When it removes a task from a queue, it assigns the task to an available thread from a pool 
+        of threads that it manages. Serial queue is local for each process while concurrent is global.   
+    - Intel Thread Building Blocks
+
+* Threading Issues
+    - fork() and exec()
+    - Signal Handling
+        * Deliver the signal to the thread to which the signal applies.
+        * Deliver the signal to every thread in the process.
+        * Deliver the signal to certain threads in the process.
+        * Assign a specific thread to receive all signals for the process.
+    - Thread Cancellation
+        * Asynchronous cancellation
+        * Deferred cancellation 
+    - Thread-Local Storage
+    - Scheduler Activations
+
+* Operating System Examples
 
