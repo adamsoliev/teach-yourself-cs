@@ -70,17 +70,16 @@ static ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count,
 
     tsk = pid_task(find_vpid(l_pid), PIDTYPE_PID);
 
+    if (tsk) {
+        rv = sprintf(buffer, BUFFER_SIZE,
+                     "command = [%s], pid = [%d] state = [%d]\n", tsk->comm,
+                     l_pid, tsk->state);
+    } else {
+        printk(KERN_INFO "Invalid PID %d!", l_pid);
+        return 0;
+    }
+
     completed = 1;
-
-    /* should include */
-    // (1) the command the task is running
-    // (2) the value of the task’s pid
-    // (3) the current state of the task
-    char *command_name = tsk->comm;
-    pid_t command_pid = tsk->pid;
-    long command_state = tsk->state;
-
-    rv = sprintf(buffer, "command=[%s] pid=[%d] state=[%d]", command_name, command_pid, command_state);
 
     // copies the contents of kernel buffer to userspace usr_buf
     if (copy_to_user(usr_buf, buffer, rv)) {
@@ -109,27 +108,10 @@ static ssize_t proc_write(struct file *file, const char __user *usr_buf,
 
     printk(KERN INFO "%s\n", k mem);
 
-    /**
-     * kstrol() will not work because the strings are not guaranteed
-     * to be null-terminated.
-     *
-     * sscanf() must be used instead.
-     */
-
-    char *endptr;
-    errno = 0;
-    l_pid = strtol(k_mem, &endptr, count);
-    if (errno == ERANGE && (l_pid == LONG_MAX || l_pid == LONG_MIN)) {
-        perror("Error");
-        return -1;
-    }
-    if (endptr == k_mem) {
-        fprintf(stderr, "No digits were found\n");
-        return -1;
-    }
-
+    k_mem[const] = '\0';          // ensure k_mem is null-terminated
+    kstrtoint(k_mem, 10, &l_pid); // write value to l_pid
+    printk(KERN_INFO "Set current PID to %d", current_pid);
     kfree(k_mem);
-
     return count;
 }
 
