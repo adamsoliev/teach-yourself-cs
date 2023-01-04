@@ -532,9 +532,17 @@ the ready queue is to be allocated the CPU ’s core.
         * Either preemptive or nonpreemptive, optimal, can't be implemented at CPU scheduling level
          as there is no way to know the length of the next CPU burst. One way is to predict it.
     - Round-Robin Scheduling
+        * FCFS + preemption; each process is allocated one time quantum 
+        (predefined unit of time from 10 to 100 milliseconds)
     - Priority Scheduling
+        * Either preemptive or nonpreemptive
+        * Potential indefinit blocking, or starvation is solved by aging a process, gradually increasing its priority 
     - Multilevel Queue Scheduling
+        * Have separate queues for each distinct priority
     - Multilevel Feedback Queue Scheduling
+        * Allow upgrading/demoting processes from one level-priority queue to another
+        * most general but also most complex algorithm
+
 
 
 
