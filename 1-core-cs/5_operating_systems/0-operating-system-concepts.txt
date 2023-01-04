@@ -501,3 +501,45 @@ Operating System Examples
 
 * Operating System Examples
 
+-----------------------------------------
+5. CPU Scheduling 
+-----------------------------------------
+CPU scheduling deals with the problem of deciding which of the processes in
+the ready queue is to be allocated the CPU ’s core.
+
+* Basic Concepts
+    - CPU–I/O Burst Cycle
+    - CPU Scheduler
+        * Selects a process from the processes in memory that are ready to execute 
+        and allocates the CPU to that process.
+    - Preemptive and Nonpreemptive Scheduling
+        * Preemptive scheduling algorithms allow a running process to be interrupted by the operating system 
+        in order to give resources to another process while nonpreemptive ones do not.
+    - Dispatcher
+        * Switches context from one process to another and from kernel to user mode
+        * Jumps to the proper location in the user program to resume that program
+
+* Scheduling Criteria
+    - CPU utilization
+    - Throughput
+        * # of processes completed per unit of time 
+    - Turnaround (ready queue + executing + I/O), Waiting (ready queue) and Response (1st response) time
+
+* Scheduling Algorithms
+    - First-Come, First-Served Scheduling
+        * Nonpreemptive, simple to implement, very inefficient
+    - Shortest-Job-First Scheduling
+        * Either preemptive or nonpreemptive, optimal, can't be implemented at CPU scheduling level
+         as there is no way to know the length of the next CPU burst. One way is to predict it.
+    - Round-Robin Scheduling
+    - Priority Scheduling
+    - Multilevel Queue Scheduling
+    - Multilevel Feedback Queue Scheduling
+
+
+
+
+
+
+
+
