@@ -1,6 +1,10 @@
 // Official website supporting Operating System Concepts
-// https://www.os-book.com/OS10/
+https://www.os-book.com/OS10/
 
+// Programming Challenge Solutions
+https://github.com/forestLoop/Learning-EI338
+https://github.com/rafi007akhtar/oslab
+https://github.com/OmerBaddour/Operating_Systems_Code
 
 -----------------------------------------------------------------------------------
 
