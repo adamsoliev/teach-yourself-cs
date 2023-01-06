@@ -528,26 +528,211 @@ the ready queue is to be allocated the CPU ’s core.
 * Scheduling Algorithms
     - First-Come, First-Served Scheduling
         * Nonpreemptive, simple to implement, very inefficient
+        
     - Shortest-Job-First Scheduling
         * Either preemptive or nonpreemptive, optimal, can't be implemented at CPU scheduling level
          as there is no way to know the length of the next CPU burst. One way is to predict it.
+
     - Round-Robin Scheduling
-        * FCFS + preemption; each process is allocated one time quantum 
-        (predefined unit of time from 10 to 100 milliseconds)
+        * allocates the CPU to each process for a time quantum. If the process does not relinquish 
+        the CPU before its time quantum expires, the process is preempted, and another process is scheduled
+        to run for a time quantum. 
+
     - Priority Scheduling
-        * Either preemptive or nonpreemptive
-        * Potential indefinit blocking, or starvation is solved by aging a process, gradually increasing its priority 
+        * assigns each process a priority, and the CPU is allocated to the process with 
+        the highest priority. Processes with the same priority can be scheduled in FCFS order or using RR scheduling. 
+
     - Multilevel Queue Scheduling
-        * Have separate queues for each distinct priority
+        * partitions processes into several separate queues arranged by priority, 
+        and the scheduler executes the processes in the highest-priority queue. 
+        Different scheduling algorithms may be used in each queue.
+        
     - Multilevel Feedback Queue Scheduling
-        * Allow upgrading/demoting processes from one level-priority queue to another
+        * similar to multilevel queues, except that a process may migrate between different queues.
         * most general but also most complex algorithm
 
+* Thread Scheduling
+    - Contention Scope
+        * user-level (scheduled by a thread library that uses process-contention scope (PCS) scheme)
+        * kernel-level (scheduled by the OS that uses system-contention scope (SCS) scheme)
+
+* Multi-Processor Scheduling
+    - Approaches to Multiple-Processor Scheduling
+        * asymmetric multiprocessing - one master for system activities and other processors for user code
+        * symmetric multiprocessing (SMP) - where each processor is self-scheduling
+            1. All threads may be in a common ready queue.
+            2. Each processor may have its own private queue of threads, which is supported by all major OSs
+
+    - Multicore Processors
+        * memory stall - when a CPU accesses memory, it spends time waiting for the data to become available
+            - multithreaded processing solves this; in it, two (or more) hardware threads are assigned to each core
+                1. coarse-grained multithreading - doesn't switch until a long-latency event, such as memory stall 
+                2. fine-grained multithreading - switches between threads at a much finer level of granularity
+        * since the resources of the physical core must be shared among its hardware threads, a multithreaded, 
+        multicore processor actually requires two different levels of scheduling: at software and hardware level
+
+    - Load Balancing (on SMP systems)
+        * equalizes loads between CPU cores, although migrating threads between cores to balance loads may invalidate
+        cache contents and therefore may increase memory access times.
+
+    - Processor Affinity
+        * due to high cost of cache invalidation and repopulation, threads aren't moved to completely new processors (affinity)
+        * soft affinity (no guarantee) vs hard affinity (guarantee)
+
+    - Heterogeneous Multiprocessing
+
+* Real-Time CPU Scheduling
+    - soft real-time systems and hard real-time systems
+    - Minimizing Latency
+        * Event latency
+            1. Interrupt latency
+            2. Dispatch latency
+    - Priority-Based Scheduling
+    - Rate-Monotonic Scheduling
+        * schedules periodic tasks using a static priority policy with preemption (priorities don't change)
+
+    - Earliest-Deadline-First Scheduling
+        * assigns priorities dynamically according to deadline (priorities can change)
+
+    - Proportional Share Scheduling
+        * operate by allocating T shares among all applications
+        * must work with an admission-control policy to guarantee that an app receives its allocated shares of time
+
+    - POSIX Real-Time Scheduling
+
+
+Task
+    Name
+    priority (1 - 10)
+    CPU burst
+
+Scheduler
+    a list of tasks
+        could be unordered
+            tasks could be picked in certain order based on the algo
+        could be ordered based on priority
+        could be put into different queues based on priority
+    scheduling algo
+
+driver.c
+    Read files
+    Insert them into a list
+    schedule()
+        pickNextTask()  | CPU.c
+        run()           | CPU.c
+
+Makefile determines the spec algo
 
 
 
+-----------------------------------------
+6. Synchronization Tools 
+-----------------------------------------
 
+Process synchronization involves using tools that control access to
+shared data to avoid race conditions. These toolsmust be used carefully,
+as their incorrect use can result in poor system performance, including
+deadlock.
 
+* The Critical-Section Problem
+    - general structure of a typical process
+        ---------------------------------
+            while (true) {
+                entry section
+                    critical section
+                exit section
+                remainder section
+            }
+        ---------------------------------
 
+    - to design a protocol that the processes can use to synchronize their activity so as to
+    cooperatively share data.
+        * A solution to the critical-section problem must satisfy the following three requirements:
+            - Mutual exclusion  - ensures that only one process at a time is active in its critical section
+            - Progress          - ensures that programs will cooperatively determine what process will 
+                                next enter its critical section
+            - Bounded waiting   - limits how much time a program will wait before it can enter its critical section
+        * Two approaches to handle critical sections in OSs
+            - preemptive kernels 
+            - nonpreemptive kernels
 
+* Sofware solutions - don't work well on modern computer architectures
+    - Peterson’s Solution
+
+* Hardware Support for Synchronization
+    - Memory Barriers
+        * Memory modes
+            - Strongly ordered  - memory modification in one CPU is immediately visible to other CPUs
+            - Weakly ordered    - it isn't the case
+            * memory fences (load/store fences) are used to ensure all load/store operations, coming before
+            the fence, are completed before initializing load/store operations, coming after the fence
+    - Hardware Instructions
+        * test_and_set()
+            ---------------------------------------------------------------
+            while (true) {
+                // Try to set the lock to true
+                if (test_and_set(&lock)) {
+                    // Lock is already set, so wait until it is available
+                    continue;
+                }
+                // Lock is now set, so enter critical section
+                // Critical section code goes here
+                // Exit critical section
+                lock = false;
+            }
+            ---------------------------------------------------------------
+
+        * compare_and_swap()
+            ---------------------------------------------------------------
+            while (true) {
+                // Try to set the lock to true
+                bool expected_value = false;
+                if (!compare_and_swap(&lock, expected_value, true)) {
+                    // Lock is already set, so wait until it is available
+                    continue;
+                }
+                // Lock is now set, so enter critical section
+                // Critical section code goes here
+                // Exit critical section
+                lock = false;
+            }
+            ---------------------------------------------------------------
+
+        * load-link/store-condtional()
+        - all are executed atomically as one uninterrupted unit
+    - Atomic Variables
+        * special variables, operations on whom are implemented using compare_and_swap()
+
+* Mutex Locks
+    - Uses a mutex lock (and its corresponding acquire()/release()) to solve the critical section problem
+    - Disadvantage of this is busy waiting - if a lock is taken, other processes must loop continiously in the call to acquire() 
+    - The simplest of synchronization tools
+
+* Semaphores
+    - Int variable only accessed through standard atomic wait() and signal() (similar to acquire()/release())
+    - Types
+        * Counting semaphores   - can be used to control access to a resource consisting of X number of instances
+        * Binary semaphores     - similar to mutex lock
+    - Also suffers from busy waiting - solution is let it suspend itself if semaphore is unavailable and wake up when available
+
+* Monitor
+    - A monitor type is an ADT that includes a set of programmer-defined
+    operations that are provided with mutual exclusion within the monitor.
+    - The monitor construct ensures that only one process at a time is active
+    within the monitor
+
+    Monitor in C
+    -----------------------------------------------------------------------
+    // Structure to represent the monitor
+    typedef struct {
+        int shared_data; // Shared data protected by the monitor
+        pthread_mutex_t lock; // Mutex used to implement the monitor lock
+    } Monitor;
+    -----------------------------------------------------------------------
+
+* Liveness
+    - Deadlock
+    - Priority Inversion
+
+* Evaluation
 
