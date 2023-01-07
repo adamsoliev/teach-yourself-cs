@@ -193,29 +193,44 @@ void *check_rows(void *arg);
 void *check_subgrid(void *arg);
 
 int main() {
+    // Read in the Sudoku boards
     int boards[NUM_BOARDS][ROWS][COLS];
     read_boards("sudoku_solutions.txt", boards);
     for (int i = 0; i < NUM_BOARDS; ++i) {
-        print_grid(boards[i]);
-        print_stats(boards[i]);
 
+        /* ----------- SINGLE-THREADED ----------- */
+        print_grid(boards[i]);  // prints the whole grid
+        print_stats(boards[i]); // prints row, col and subgrid sums and checks
+                                // if the board is valid
+
+        // Copy [i]th board of the board array into 'grid'
         for (int a = 0; a < ROWS; a++) {
             for (int b = 0; b < COLS; b++) {
                 grid[a][b] = boards[i][a][b];
             }
         }
 
-        /* PROGRAM */
+        /* ----------- MULTI-THREADED ----------- */
+        // Initialize the worker threads array
         pthread_t threads[NUM_THREADS];
+
+        // Create a thread to check columns
         pthread_create(&threads[0], NULL, check_columns, NULL);
+
+        // Create a thread to check rows
         pthread_create(&threads[1], NULL, check_rows, NULL);
+
+        // Create nine threads to check each of the subgrids
         for (int i = 0; i < 9; i++) {
             pthread_create(&threads[i + 2], NULL, check_subgrid, (void *)i);
         }
+
+        // Wait for all threads to finish
         for (int i = 0; i < NUM_THREADS; i++) {
             pthread_join(threads[i], NULL);
         }
 
+        // Check if all regions are valid
         bool valid = true;
         for (int i = 0; i < NUM_THREADS; i++) {
             if (!region_validity[i]) {
