@@ -6,8 +6,8 @@
 
 #define ROWS 9
 #define COLS 9
-#define NUM_BOARDS 15
-#define MAXVAL 45
+#define NUM_BOARDS 15     // comes from txt file
+#define VALID_UNIT_SUM 45 // sum of each valid row, col and 3x3 grid
 
 #define RESET "\033[0m"
 #define RED "\033[31m"
@@ -53,7 +53,7 @@ void sum_rows(int grid[ROWS][COLS]) {
         for (int j = 0; j < COLS; j++) {
             sum += grid[i][j];
         }
-        if (sum != MAXVAL) {
+        if (sum != VALID_UNIT_SUM) {
             printf(RED "%d" RESET, sum); // red text
         } else {
             printf("%d", sum);
@@ -73,7 +73,7 @@ void sum_columns(int grid[ROWS][COLS]) {
         for (int i = 0; i < ROWS; i++) {
             sum += grid[i][j];
         }
-        if (sum != MAXVAL) {
+        if (sum != VALID_UNIT_SUM) {
             printf(RED "%d" RESET, sum); // red text
         } else {
             printf("%d", sum);
@@ -96,7 +96,7 @@ void sum_3x3_grids(int grid[ROWS][COLS]) {
                     sum += grid[x][y];
                 }
             }
-            if (sum != MAXVAL) {
+            if (sum != VALID_UNIT_SUM) {
                 printf(RED "%d" RESET, sum); // red text
             } else {
                 printf("%d", sum);
@@ -187,23 +187,9 @@ typedef struct {
 } parameters;
 
 int main() {
-    // int grid[ROWS][COLS];
-    // for (int i = 0; i < 20; ++i) {
-    //     if (i % 2 == 0) {
-    //         printf("GRID\n");
-    //         generate_random_grid(grid);
-    //     } else {
-    //         printf("BOARD\n");
-    //         generate_random_board(grid);
-    //     }
-    //     print_grid(grid);
-    //     print_stats(grid);
-    // }
-
     int boards[NUM_BOARDS][ROWS][COLS];
     read_boards("sudoku_solutions.txt", boards);
     for (int i = 0; i < NUM_BOARDS; ++i) {
-        // int board[ROWS][COLS] = boards[i];
         print_grid(boards[i]);
         print_stats(boards[i]);
     }
