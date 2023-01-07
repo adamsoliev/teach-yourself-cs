@@ -1,4 +1,5 @@
 
+#include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,10 +9,12 @@
 #define COLS 9
 #define NUM_BOARDS 15     // comes from txt file
 #define VALID_UNIT_SUM 45 // sum of each valid row, col and 3x3 grid
+#define NUM_THREADS 11
 
 #define RESET "\033[0m"
 #define RED "\033[31m"
 
+/* ------------------- FOR TESTING ------------------- */
 // Function prototypes
 void generate_random_grid(int grid[ROWS][COLS]);
 void print_grid(int grid[ROWS][COLS]);
@@ -114,11 +117,11 @@ void print_stats(int grid[ROWS][COLS]) {
     sum_columns(grid);
     sum_3x3_grids(grid);
     if (check_board(grid)) {
-        printf("VALID BOARD\n");
+        printf("SINGLE-THREAD: VALID\n");
     } else {
-        printf(RED "INVALID BOARD" RESET "\n");
+        printf(RED "SINGLE-THREAD: INVALID" RESET "\n");
     }
-    printf("\n");
+    // printf("\n");
 }
 
 int is_valid(int board[ROWS][COLS], int row, int col, int val) {
@@ -179,12 +182,15 @@ void read_boards(char *filename, int boards[NUM_BOARDS][ROWS][COLS]) {
 
     fclose(fp);
 }
+/* ------------------- FOR TESTING END ------------------- */
 
-/* structure for passing data to threads */
-typedef struct {
-    int row;
-    int col;
-} parameters;
+/* ------------------- PROGRAM ------------------- */
+int grid[ROWS][COLS];
+bool region_validity[NUM_THREADS];
+
+void *check_columns(void *arg);
+void *check_rows(void *arg);
+void *check_subgrid(void *arg);
 
 int main() {
     int boards[NUM_BOARDS][ROWS][COLS];
@@ -192,13 +198,105 @@ int main() {
     for (int i = 0; i < NUM_BOARDS; ++i) {
         print_grid(boards[i]);
         print_stats(boards[i]);
-    }
 
-    // parameters *data = (parameters *)malloc(sizeof(parameters));
-    // data->row = 1;
-    // data->col = 1;
-    // Create a thread and pass it data as a parameter
-    // Collect the results and return the result
+        for (int a = 0; a < ROWS; a++) {
+            for (int b = 0; b < COLS; b++) {
+                grid[a][b] = boards[i][a][b];
+            }
+        }
+
+        /* PROGRAM */
+        pthread_t threads[NUM_THREADS];
+        pthread_create(&threads[0], NULL, check_columns, NULL);
+        pthread_create(&threads[1], NULL, check_rows, NULL);
+        for (int i = 0; i < 9; i++) {
+            pthread_create(&threads[i + 2], NULL, check_subgrid, (void *)i);
+        }
+        for (int i = 0; i < NUM_THREADS; i++) {
+            pthread_join(threads[i], NULL);
+        }
+
+        bool valid = true;
+        for (int i = 0; i < NUM_THREADS; i++) {
+            if (!region_validity[i]) {
+                valid = false;
+                break;
+            }
+        }
+        if (valid)
+            printf("MULTI-THREAD: VALID\n");
+        else
+            printf(RED "MULTI-THREAD: INVALID\n" RESET);
+        printf("\n");
+    }
 
     return 0;
 }
+
+void *check_columns(void *arg) { // we pass this to 'not cast this function to
+                                 // void* in pthread_create'
+    // Iterate through each column
+    for (int col = 0; col < COLS; col++) {
+        bool digits[COLS] = {false};
+        // Iterate through each element in the column
+        for (int row = 0; row < ROWS; row++) {
+            int num = grid[row][col];
+            if ((num < 1 || num > 9) || digits[num - 1]) {
+                // Invalid Sudoku solution
+                // printf("invalid col (row): %d (%d)\n", col, row);
+                region_validity[0] = false;
+                pthread_exit(0);
+            }
+            digits[num - 1] = true;
+        }
+    }
+    // All columns are valid
+    region_validity[0] = true;
+    pthread_exit(0);
+}
+
+void *check_rows(void *arg) {
+    // Iterature through each row
+    for (int row = 0; row < ROWS; row++) {
+        bool digits[ROWS] = {false};
+        // Iterature through each element in the row
+        for (int col = 0; col < COLS; col++) {
+            int num = grid[row][col];
+            if ((num < 1 || num > 9) || digits[num - 1]) {
+                // Invalid Sudoku solution
+                // printf("invalid row (col): %d (%d)\n", row, col);
+                region_validity[1] = false;
+                pthread_exit(0);
+            }
+            digits[num - 1] = true;
+        }
+    }
+    // All rows are valid
+    region_validity[1] = true;
+    pthread_exit(0);
+}
+
+void *check_subgrid(void *arg) {
+    int subgrid_idx = (int)arg;
+    // Calculate the starting row and column for the subgrid
+    int start_row = (subgrid_idx / 3) * 3;
+    int start_col = (subgrid_idx % 3) * 3;
+
+    bool digits[9] = {false};
+    // Iterature through each subgrid
+    for (int row = start_row; row < start_row + 3; row++) {
+        for (int col = start_col; col < start_col + 3; col++) {
+            int num = grid[row][col];
+            if ((num < 1 || num > 9) || digits[num - 1]) {
+                // Invalid Sudoku solution
+                region_validity[subgrid_idx + 2] = false;
+                pthread_exit(0);
+            }
+            digits[num - 1] = true;
+        }
+    }
+    // All subgrids are valid
+    region_validity[subgrid_idx + 2] = true;
+    pthread_exit(0);
+}
+/* ------------------- PROGRAM END ------------------- */
