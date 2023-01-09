@@ -736,3 +736,35 @@ deadlock.
 
 * Evaluation
 
+-----------------------------------------
+7. Synchronization Examples 
+-----------------------------------------
+
+• Explain the bounded-buffer, readers – writers, and dining – philosophers
+synchronization problems.
+• Describe specific tools used by Linux and Windows to solve process
+synchronization problems.
+• Illustrate how POSIX and Java can be used to solve process synchroniza-
+tion problems.
+• Design and develop solutions to process synchronization problems using
+POSIX and Java APIs.
+
+* Classic Problems of Synchronization
+    - The Bounded-Buffer Problem
+        * The bounded-buffer problem involves ensuring that the producers do not 
+        try to add data to the buffer when it is full, and that the consumers do 
+        not try to remove data from the buffer when it is empty.
+
+    - The Readers – Writers Problem
+        * The goal of the readers–writers problem is to ensure that multiple threads 
+        can read from the shared resource at the same time, but that only one thread 
+        can write to the resource at a time.
+
+    - The Dining-Philosophers Problem
+        * In the Dining Philosophers problem, there are five philosophers sitting 
+        around a table, each with a plate of food in front of them. In order to eat, 
+        a philosopher needs to pick up both the fork to their left and the fork to their 
+        right. However, there is only one fork between each pair of philosophers, so 
+        if one philosopher picks up the left fork, they may need to wait for the philosopher 
+        to their right to release the right fork before they can eat.
+
