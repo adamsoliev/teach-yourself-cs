@@ -600,51 +600,11 @@ the ready queue is to be allocated the CPU ’s core.
 
     - POSIX Real-Time Scheduling
 
-
-Task
-    Name
-    priority (1 - 10)
-    CPU burst
-
-Scheduler
-    a list of tasks
-        could be unordered
-            tasks could be picked in certain order based on the algo
-        could be ordered based on priority
-        could be put into different queues based on priority
-    scheduling algo
-
-driver.c
-    Read files
-    Insert them into a list
-    schedule()
-        pickNextTask()  | CPU.c
-        run()           | CPU.c
-
-Makefile determines the spec algo
-
-
-
 -----------------------------------------
 6. Synchronization Tools 
 -----------------------------------------
 
-Process synchronization involves using tools that control access to
-shared data to avoid race conditions. These toolsmust be used carefully,
-as their incorrect use can result in poor system performance, including
-deadlock.
-
 * The Critical-Section Problem
-    - general structure of a typical process
-        ---------------------------------
-            while (true) {
-                entry section
-                    critical section
-                exit section
-                remainder section
-            }
-        ---------------------------------
-
     - to design a protocol that the processes can use to synchronize their activity so as to
     cooperatively share data.
         * A solution to the critical-section problem must satisfy the following three requirements:
@@ -740,15 +700,6 @@ deadlock.
 7. Synchronization Examples 
 -----------------------------------------
 
-• Explain the bounded-buffer, readers – writers, and dining – philosophers
-synchronization problems.
-• Describe specific tools used by Linux and Windows to solve process
-synchronization problems.
-• Illustrate how POSIX and Java can be used to solve process synchroniza-
-tion problems.
-• Design and develop solutions to process synchronization problems using
-POSIX and Java APIs.
-
 * Classic Problems of Synchronization
     - The Bounded-Buffer Problem
         * The bounded-buffer problem involves ensuring that the producers do not 
@@ -768,3 +719,65 @@ POSIX and Java APIs.
         if one philosopher picks up the left fork, they may need to wait for the philosopher 
         to their right to release the right fork before they can eat.
 
+* Synchronization within the Kernel
+    - Synchronization in Windows is done using different types of dispatcher objects below
+        * Mutexes: a synchronization object that allows only a single thread 
+        to access a shared resource at a time.
+
+        * Semaphores: a synchronization object that allows multiple threads 
+        to access a shared resource, but limits the number of threads that can access the 
+        resource simultaneously.
+
+        * Events: a synchronization object that allows threads to be signaled 
+        or unsignaled, and can be used to synchronize the execution of threads.
+
+        * Timer Queues: a system-defined object that allows a thread to specify 
+        a function to be called at a specified time in the future.
+
+        * Timer Objects: a system-defined object that allows a thread to 
+        specify a function to be called at a specified interval.
+
+    - Synchronization in Linux is done using mechanisms below
+        * Mutexes
+
+        * Semaphores
+
+        * Spinlocks: a type of mutual exclusion lock
+
+        * Reader-writer locks: allows multiple threads to read a shared resource 
+        concurrently, but only allows a single thread to write to the resource at a time.
+
+        * Condition variables: a synchronization object that allows a thread to wait for a 
+        specific condition to be met before proceeding. They are often used in conjunction 
+        with mutexes to synchronize the execution of threads.
+
+        * Atomic operations: used to perform operations on shared variables in a way that 
+        ensures that the operation is completed without interference from other threads or processes.
+
+* POSIX Synchronization
+    - Mutexes
+    - Semaphores
+    - Condition variables
+    - Read-write locks
+
+* Synchronization in Java
+    - Java monitors
+    - Reentrant locks
+    - Semaphores
+    - Condition variables
+
+* Alternative Approaches
+    - Transactional Memory
+        * A higher level of abstraction for synchronization than traditional synchronization mechanisms
+        * It allows threads to execute transactions, which are sequences of memory accesses that 
+        are treated as atomic units - that is, other threads are prevented from accessing them
+
+    - OpenMP
+        * Provides barriers, locks, atomic operations, critical sections for synchronizing 
+        the execution of threads
+
+    - Functional Programming Languages
+        * they do not maintain state - their variables are immutable
+        * Essentially, most of the problems addressed in this chapter are nonexistent in functional languages.
+
+ 
