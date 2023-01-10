@@ -783,3 +783,53 @@ the ready queue is to be allocated the CPU ’s core.
         * Essentially, most of the problems addressed in this chapter are nonexistent in functional languages.
 
  
+-----------------------------------------
+8. Deadlocks 
+-----------------------------------------
+* Livelock vs deadlock
+    - State: Deadlock occurs when two or more processes are blocked and unable to proceed, whereas in a livelock, 
+    the processes are still active and running, but not making progress.
+
+    - Resources: In a deadlock, processes are blocked waiting for a resource that is held by another process, 
+    whereas in a livelock, the processes are actively trying to acquire a shared resource, but 
+    none of them are able to do so.
+
+    - Detection: Deadlocks are typically easier to detect than livelocks because they leave clear signs, 
+    such as blocked or suspended processes, whereas livelocks are harder to detect because the processes 
+    are still active and running.
+
+    - Resolution: Deadlocks can be resolved by killing one of the processes involved in the deadlock, or 
+    by rolling back the actions of one of the processes. Livelocks can be resolved by adding a random delay 
+    in the loop that acquires the resource, or by using a hierarchy of the resources.
+
+* Deadlock Characterization
+    - Necessary Conditions
+        * Mutual exclusion
+        * Hold and wait
+        * No preemption
+        * Circular wait
+
+    - Resource-Allocation Graph
+        * A cycle, A->B->C->D->A, in which each process is requesting a resource that is held 
+        by another process in the cycle, is a clear indication of a deadlock.
+
+        * It's also possible to detect deadlock if the graph has no cycle but multiple disconnected subgraphs, 
+        where a process in a subgraph is holding a resource needed by a process in another subgraph.
+
+* Methods for Handling Deadlocks
+    - Deadlock prevention - ensure that at least one of the necessary conditions can't hold
+        * Only the circular-wait condition presents an opportunity for a practical solution 
+        by invalidating one of the necessary conditions
+    - Deadlock avoidance - ensure preventative measures (e.g., using RAG) are taken
+        * Resource-Allocation-Graph Algorithm - single instance of each resource type
+        * Banker’s Algorithm - multiple instance of each resource type
+    - Deadlock detection and recovery - ensure to detect deadlocks and recover from them
+        * Wait-for Graph Algorithm - single instance of each resource type
+        * Detection Algorithm - multiple instance of each resource type
+    - Timeout 
+
+
+
+
+
+
