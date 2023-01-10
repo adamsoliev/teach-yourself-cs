@@ -1,5 +1,7 @@
 // Official website supporting Operating System Concepts
 https://www.os-book.com/OS10/
+// Official source code
+https://github.com/greggagne/osc10e
 
 // Programming Challenge Solutions
 https://github.com/forestLoop/Learning-EI338
